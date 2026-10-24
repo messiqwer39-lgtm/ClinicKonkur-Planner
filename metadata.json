@@ -1,0 +1,9 @@
+{
+  "name": "برنامه‌ریزی و گزارش کار هفتگی کنکور",
+  "description": "سامانه هوشمند و مدرن برنامه‌ریزی هفتگی کنکور با پارت‌بندی ۸گانه روزانه، باکس نگاه کلی دروس و دفترچه جامع گزارش کار و تحلیل عملکرد",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
+
