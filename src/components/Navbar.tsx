@@ -12,10 +12,11 @@ import {
   Download,
   Info,
   WifiOff,
+  BookMarked,
 } from 'lucide-react';
 import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
 
-export type AppTab = 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors';
+export type AppTab = 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors' | 'sources';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -155,7 +156,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>نکات مشاوره‌ای (۱۰ مقاله)</span>
+            <span>نکات مشاوره‌ای (۱۸ مقاله)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('sources')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 ${
+              activeTab === 'sources'
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-xs'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            <BookMarked className="w-3.5 h-3.5 text-emerald-400" />
+            <span>منابع تستی پیشنهادی</span>
           </button>
 
           <button
@@ -173,15 +186,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Actions & Android PWA Install */}
         <div className="hidden xl:flex items-center gap-2 shrink-0">
+          {/* APK Direct Download Button for Android */}
+          <a
+            href="/ClinicKonkur-Planner-v1.0.0.apk"
+            download="ClinicKonkur-Planner-v1.0.0.apk"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-emerald-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition-transform hover:scale-105 whitespace-nowrap"
+            title="دانلود مستقیم فایل نصبی APK اندروید (آماده برای کافه بازار و مایکت)"
+          >
+            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>دانلود APK اندروید</span>
+          </a>
+
           {/* PWA Install Button for Android / Desktop */}
           {isInstallable && (
             <button
               onClick={install}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-amber-400 hover:from-cyan-300 hover:to-amber-300 rounded-xl shadow-xs transition-transform hover:scale-105 whitespace-nowrap"
-              title="نصب اپلیکیشن روی دستگاه"
+              title="نصب وب‌اپلیکیشن روی دستگاه"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>نصب اپلیکیشن</span>
+              <span>نصب PWA</span>
             </button>
           )}
 

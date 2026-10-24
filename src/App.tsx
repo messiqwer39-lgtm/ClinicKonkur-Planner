@@ -12,6 +12,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { CounselingArticlesPage } from './components/CounselingArticlesPage';
 import { MajorsPage } from './components/MajorsPage';
 import { PomodoroSection } from './components/PomodoroSection';
+import { TestSourcesPage } from './components/TestSourcesPage';
 
 import {
   DaySchedule,
@@ -329,12 +330,17 @@ export default function App() {
           />
         )}
 
-        {/* TAB 5: Counseling Articles & Study Quality Tips (۱۰ مقاله مشاوره‌ای) */}
+        {/* TAB 5: Counseling Articles & Study Quality Tips (۱۸ مقاله مشاوره‌ای) */}
         {activeTab === 'articles' && (
           <CounselingArticlesPage />
         )}
 
-        {/* TAB 6: Majors & Top Careers Guide (معرفی رشته‌ها و شغل‌ها) */}
+        {/* TAB 6: Test Sources Guide (بانک منابع تستی کنکور) */}
+        {activeTab === 'sources' && (
+          <TestSourcesPage />
+        )}
+
+        {/* TAB 7: Majors & Top Careers Guide (معرفی رشته‌ها و شغل‌ها) */}
         {activeTab === 'majors' && (
           <MajorsPage />
         )}
