@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-amber-300 tracking-tight">
-                  پلنر کلینیک کنکور
+                  کلینیک پلن
                 </span>
                 {!isOnline && (
                   <span className="flex items-center gap-1 text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded">
@@ -188,13 +188,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="hidden xl:flex items-center gap-2 shrink-0">
           {/* APK Direct Download Button for Android */}
           <a
-            href="/ClinicKonkur-Planner-v1.0.0.apk"
-            download="ClinicKonkur-Planner-v1.0.0.apk"
+            href="/ClinicPlan-v1.1.0.apk"
+            download="ClinicPlan-v1.1.0.apk"
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-emerald-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition-transform hover:scale-105 whitespace-nowrap"
-            title="دانلود مستقیم فایل نصبی APK اندروید (آماده برای کافه بازار و مایکت)"
+            title="دانلود مستقیم فایل نصبی کلینیک پلن (APK اندروید برای کافه بازار و مایکت)"
           >
             <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>دانلود APK اندروید</span>
+            <span>دانلود APK کلینیک پلن</span>
           </a>
 
           {/* PWA Install Button for Android / Desktop */}

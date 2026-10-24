@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
+    base: './',
     plugins: [
       react(),
       tailwindcss(),
@@ -14,15 +15,15 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.png', 'icon.png'],
         manifest: {
           id: '/',
-          name: 'پلنر کلینیک کنکور | Clinic Konkur Planner',
-          short_name: 'پلنر کنکور',
-          description: 'برنامه‌ریزی تخصصی ۸ پارت، دفترچه گزارش کار تحلیلی و تکنیک پومودورو کلینیک کنکور',
+          name: 'کلینیک پلن | Clinic Plan',
+          short_name: 'کلینیک پلن',
+          description: 'برنامه‌ریزی تخصصی ۸ پارت، دفترچه گزارش کار تحلیلی و تکنیک پومودورو کلینیک پلن',
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',
           orientation: 'portrait',
-          start_url: '/',
-          scope: '/',
+          start_url: './',
+          scope: './',
           dir: 'rtl',
           lang: 'fa',
           icons: [

@@ -235,12 +235,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onEnter, isOpen, o
         <div className="p-6 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
           {/* Direct APK Download Button on the Welcome Screen! */}
           <a
-            href="/ClinicKonkur-Planner-v1.0.0.apk"
-            download="ClinicKonkur-Planner-v1.0.0.apk"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-cyan-400/50 text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 text-xs font-bold transition-all hover:scale-105"
+            href="/ClinicPlan-v1.1.0.apk"
+            download="ClinicPlan-v1.1.0.apk"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-400/50 text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 text-xs font-bold transition-all hover:scale-105 shadow-sm"
           >
-            <Download className="w-4 h-4 text-cyan-400" />
-            <span>دانلود مستقیم فایل APK اندروید (۸ مگابایت)</span>
+            <Download className="w-4 h-4 text-emerald-400" />
+            <span>دانلود مستقیم فایل نصبی کلینیک پلن (APK اندروید)</span>
           </a>
 
           <button

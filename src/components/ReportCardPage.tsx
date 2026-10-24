@@ -28,6 +28,8 @@ import {
   Layers,
 } from 'lucide-react';
 
+import { ReportChartsSection } from './ReportChartsSection';
+
 interface ReportCardPageProps {
   reports: DailyReportRow[];
   onUpdateReport: (updated: DailyReportRow[]) => void;
@@ -347,6 +349,9 @@ export const ReportCardPage: React.FC<ReportCardPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Recharts Analytics: Weekly Study Hours & Tests Progress */}
+      <ReportChartsSection reports={reports} />
 
       {/* Filter Toolbar */}
       <div className="bg-white rounded-xl border border-slate-200/80 px-4 py-2.5 flex items-center justify-between text-xs no-print">
