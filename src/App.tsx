@@ -7,15 +7,17 @@ import { ReportCardPage } from './components/ReportCardPage';
 import { PartEditModal } from './components/PartEditModal';
 import { PartTimeEditModal } from './components/PartTimeEditModal';
 import { StudyTimerModal } from './components/StudyTimerModal';
+import { ScreenshotsModal } from './components/ScreenshotsModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
-import { TodayProgressWidget } from './components/TodayProgressWidget';
-import { KonkurCountdown } from './components/KonkurCountdown';
-import { PromoBannerStrip, PromoTicker } from './components/PromoBannerStrip';
-import { PrintablePlan } from './components/PrintablePlan';
 import { CounselingArticlesPage } from './components/CounselingArticlesPage';
 import { MajorsPage } from './components/MajorsPage';
 import { PomodoroSection } from './components/PomodoroSection';
 import { TestSourcesPage } from './components/TestSourcesPage';
+import { DailyProgressWidget } from './components/DailyProgressWidget';
+import { KonkurCountdown } from './components/KonkurCountdown';
+import { ClinicBanner } from './components/ClinicBanner';
+import { PrintScheduleModal } from './components/PrintScheduleModal';
+import { PlayProtectGuideModal } from './components/PlayProtectGuideModal';
 
 import {
   DaySchedule,
@@ -44,9 +46,10 @@ import {
 } from './utils/storage';
 import { playChime } from './utils/helpers';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
-  // Navigation tabs: 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors'
+  // Navigation tabs: 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors' | 'sources'
   const [activeTab, setActiveTab] = useState<AppTab>('schedule');
 
   // Core Data States
@@ -64,27 +67,18 @@ export default function App() {
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
   const [timerActiveSlot, setTimerActiveSlot] = useState<PartSlot | null>(null);
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+  const [isScreenshotsModalOpen, setIsScreenshotsModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isPlayProtectOpen, setIsPlayProtectOpen] = useState(false);
 
-  // Welcome Screen state: show once per day, then auto-enter into the panel
+  // Welcome Screen state: show on startup unless dismissed by user
   const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(() => {
     try {
-      const last = localStorage.getItem('welcome_last_shown_date');
-      return last !== new Date().toDateString();
+      return localStorage.getItem('hide_welcome_screen_v1') !== 'true';
     } catch {
       return true;
     }
   });
-
-  // Mark today as "welcome shown" whenever it opens (max once per day)
-  useEffect(() => {
-    if (isWelcomeOpen) {
-      try {
-        localStorage.setItem('welcome_last_shown_date', new Date().toDateString());
-      } catch {
-        /* storage unavailable */
-      }
-    }
-  }, [isWelcomeOpen]);
 
   // Auto-save to LocalStorage
   useEffect(() => {
@@ -179,6 +173,24 @@ export default function App() {
     setSchedule(updated);
   };
 
+  const handleResetData = () => {
+    if (window.confirm('آیا مطمئن هستید که می‌خواهید داده‌های برنامه ریزی را به حالت پیش‌فرض بازگردانید؟')) {
+      setHeaderInfo(INITIAL_HEADER);
+      setSchedule(generateInitialSchedule(partTimes));
+      setOverviewList(INITIAL_OVERVIEW);
+      setReports(INITIAL_REPORTS);
+      playChime('alert');
+    }
+  };
+
+  const handleLoadSample = () => {
+    setSchedule(generateInitialSchedule(partTimes));
+    setOverviewList(INITIAL_OVERVIEW);
+    setReports(INITIAL_REPORTS);
+    playChime('success');
+    confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+  };
+
   const handleStartTimer = (slot: PartSlot) => {
     setTimerActiveSlot(slot);
     setIsTimerModalOpen(true);
@@ -190,8 +202,8 @@ export default function App() {
         if (p.id === slotId) {
           return {
             ...p,
-            status: 'completed' as const,
-            completedTests: p.targetTests,
+            status: 'completed' as PartStatus,
+            completedTests: p.targetTests || p.completedTests || 0,
           };
         }
         return p;
@@ -199,203 +211,211 @@ export default function App() {
       return { ...day, parts: nextParts };
     });
     setSchedule(updated);
+    playChime('success');
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
   };
 
-  const handleResetSchedule = () => {
-    if (window.confirm('آیا مطمئن هستید که می‌خواهید تمام پارت‌های جدول را برای شروع برنامه جدید پاک کنید؟')) {
-      const emptySchedule: DaySchedule[] = DAYS_INFO.map((d) => ({
-        dayId: d.id,
-        dayName: d.name,
-        dateStr: '',
-        dayNotes: '',
-        wakeTime: '۰۶:۳۰',
-        sleepTime: '۲۳:۰۰',
-        parts: Array.from({ length: 8 }, (_, i) => ({
-          id: `slot-${d.id}-${i + 1}-${Math.random().toString(36).substring(2, 7)}`,
-          partNumber: i + 1,
-          timeRange: partTimes[i] || `پارت ${i + 1}`,
-          subject: '',
-          topic: '',
-          targetTests: 0,
-          completedTests: 0,
-          targetPages: '',
-          status: 'planned' as const,
-          notes: '',
-        })),
-      }));
-      setSchedule(emptySchedule);
-    }
-  };
-
-  const handleLoadSample = () => {
-    if (window.confirm('آیا می‌خواهید جدول و گزارش کار با نمونه کامل کنکوری پر شود؟')) {
-      setHeaderInfo(INITIAL_HEADER);
-      setSchedule(generateInitialSchedule(partTimes));
-      setOverviewList(INITIAL_OVERVIEW);
-      setReports(INITIAL_REPORTS);
-    }
-  };
-
-  const handleAddPomodoroTimeToReport = (minutes: number, isTesting: boolean) => {
-    const hours = Math.round((minutes / 60) * 10) / 10;
-    // Add to the first active day or today
-    if (reports.length > 0) {
-      const updated = [...reports];
-      const today = { ...updated[0] };
-      if (isTesting) {
-        today.testingHours += hours;
-      } else {
-        today.descriptiveHours += hours;
+  const handleAddPomodoroTimeToReport = (minutes: number) => {
+    const hours = Number((minutes / 60).toFixed(1));
+    const todayId = DAYS_INFO[new Date().getDay() === 6 ? 0 : (new Date().getDay() + 1) % 7].id;
+    const updatedReports = reports.map((r) => {
+      if (r.dayId === todayId) {
+        const nextTotal = Number((r.totalHours + hours).toFixed(1));
+        const nextTesting = Number((r.testingHours + hours).toFixed(1));
+        return {
+          ...r,
+          totalHours: nextTotal,
+          testingHours: nextTesting,
+        };
       }
-      today.totalHours = today.descriptiveHours + today.testingHours;
-      updated[0] = today;
-      setReports(updated);
-    }
+      return r;
+    });
+    setReports(updatedReports);
   };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Today's weekday mapped to schedule keys (JS: 0=Sunday ... 6=Saturday)
-  const todayDayId = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[
-    new Date().getDay()
-  ];
-  const todaySchedule = schedule.find((d) => d.dayId === todayDayId);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
-      {/* Top Navbar */}
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
+      {/* Top Promotional Announcement Bar */}
+      <ClinicBanner variant="top-strip" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+
+      {/* Main Sticky Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onPrint={handlePrint}
-        onReset={handleResetSchedule}
+        onPrint={() => setIsPrintModalOpen(true)}
+        onReset={handleResetData}
         onLoadSample={handleLoadSample}
+        onOpenScreenshots={() => setIsScreenshotsModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen(true)}
+        onOpenPlayProtect={() => setIsPlayProtectOpen(true)}
         weekTitle={headerInfo.weekNumber}
       />
 
-      {/* Main Container */}
-      <main className="no-print flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
-        {/* Rotating Clinic Konkur promo banner - visible on every tab */}
-        <PromoBannerStrip />
+      {/* Main App Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-5">
+        <AnimatePresence mode="wait">
+          {/* TAB 1: Weekly Schedule (جدول برنامه‌ریزی هفتگی) */}
+          {activeTab === 'schedule' && (
+            <motion.div
+              key="tab-schedule"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* Animated Konkur Countdown Timer to 10 Tir 1406 */}
+              <KonkurCountdown />
 
-        {/* TAB 1: Weekly Schedule (جدول برنامه‌ریزی هفتگی) */}
-        {activeTab === 'schedule' && (
-          <div className="animate-tab-in">
-            {/* Today at-a-glance: animated progress circles + Konkur countdown */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 mb-6">
-              <div className="lg:col-span-7">
-                <TodayProgressWidget todaySchedule={todaySchedule} weekSchedule={schedule} />
+              {/* NEW WIDGET: Daily Progress Summary (دایره‌های پیشرفت پارت‌ها، تست‌ها و ساعت مطالعه) */}
+              <DailyProgressWidget
+                schedule={schedule}
+                onOpenPartModal={handleOpenPartModal}
+              />
+
+              {/* Top Header Section: Date editing and quote */}
+              <HeaderSection
+                headerInfo={headerInfo}
+                onChangeHeader={setHeaderInfo}
+                totalPlannedHours={totalPlannedHours}
+                completedHours={completedHours}
+                totalPlannedTests={totalPlannedTests}
+                completedPartsCount={completedPartsCount}
+                totalPartsCount={totalPartsCount}
+              />
+
+              {/* The 7-day x 8-part Weekly Schedule Table with Part Times on Top */}
+              <WeeklyScheduleTable
+                schedule={schedule}
+                partTimes={partTimes}
+                onOpenPartModal={handleOpenPartModal}
+                onOpenTimeModal={() => setIsTimeModalOpen(true)}
+                onQuickToggleStatus={handleQuickToggleStatus}
+                onStartTimer={handleStartTimer}
+                onOpenPrintModal={() => setIsPrintModalOpen(true)}
+              />
+
+              {/* Featured Clinic Konkur Promotional Card Banner */}
+              <ClinicBanner variant="card" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+
+              {/* Section alongside the table: Weekly Overview Boxes */}
+              <div className="mt-8">
+                <SubjectsOverviewSection
+                  overviewList={overviewList}
+                  onChangeOverview={setOverviewList}
+                  schedule={schedule}
+                />
               </div>
-              <div className="lg:col-span-5">
-                <KonkurCountdown />
-              </div>
-            </div>
 
-            {/* Top Header: Start & End of Program + Motivational Quote */}
-            <HeaderSection
-              headerInfo={headerInfo}
-              onChangeHeader={setHeaderInfo}
-              totalPlannedHours={totalPlannedHours}
-              completedHours={completedHours}
-              totalPlannedTests={totalPlannedTests}
-              completedPartsCount={completedPartsCount}
-              totalPartsCount={totalPartsCount}
-            />
+              {/* Footer Banner */}
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-            {/* The 7-day x 8-part Weekly Schedule Table with Part Times on Top */}
-            <WeeklyScheduleTable
-              schedule={schedule}
-              partTimes={partTimes}
-              onOpenPartModal={handleOpenPartModal}
-              onOpenTimeModal={() => setIsTimeModalOpen(true)}
-              onQuickToggleStatus={handleQuickToggleStatus}
-              onStartTimer={handleStartTimer}
-            />
-
-            {/* Section in front / alongside the table: Weekly Overview Boxes for Bio, Physics, Chem, Math, General */}
-            <div className="mt-8">
+          {/* TAB 2: Dedicated Overview (نگاه کلی دروس اختصاصی و عمومی) */}
+          {activeTab === 'overview' && (
+            <motion.div
+              key="tab-overview"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <KonkurCountdown />
+              <HeaderSection
+                headerInfo={headerInfo}
+                onChangeHeader={setHeaderInfo}
+                totalPlannedHours={totalPlannedHours}
+                completedHours={completedHours}
+                totalPlannedTests={totalPlannedTests}
+                completedPartsCount={completedPartsCount}
+                totalPartsCount={totalPartsCount}
+              />
               <SubjectsOverviewSection
                 overviewList={overviewList}
                 onChangeOverview={setOverviewList}
                 schedule={schedule}
               />
-            </div>
-          </div>
-        )}
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-        {/* TAB 2: Dedicated Overview (نگاه کلی دروس اختصاصی و عمومی) */}
-        {activeTab === 'overview' && (
-          <div className="animate-tab-in">
-            <HeaderSection
-              headerInfo={headerInfo}
-              onChangeHeader={setHeaderInfo}
-              totalPlannedHours={totalPlannedHours}
-              completedHours={completedHours}
-              totalPlannedTests={totalPlannedTests}
-              completedPartsCount={completedPartsCount}
-              totalPartsCount={totalPartsCount}
-            />
-            <SubjectsOverviewSection
-              overviewList={overviewList}
-              onChangeOverview={setOverviewList}
-              schedule={schedule}
-            />
-          </div>
-        )}
+          {/* TAB 3: Study Report Table (صفحه مدیریت گزارش کار) */}
+          {activeTab === 'report' && (
+            <motion.div
+              key="tab-report"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <ReportCardPage
+                reports={reports}
+                onUpdateReport={setReports}
+                onPrint={() => setIsPrintModalOpen(true)}
+              />
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-        {/* TAB 3: Study Report Table (صفحه مدیریت گزارش کار) */}
-        {activeTab === 'report' && (
-          <div className="animate-tab-in">
-          <ReportCardPage
-            reports={reports}
-            onUpdateReport={setReports}
-            onPrint={handlePrint}
-          />
-          </div>
-        )}
+          {/* TAB 4: Pomodoro Focus Study Technique (تکنیک مطالعه پومودورو) */}
+          {activeTab === 'pomodoro' && (
+            <motion.div
+              key="tab-pomodoro"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <PomodoroSection
+                onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
+              />
+              <ClinicBanner variant="compact" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-        {/* TAB 4: Pomodoro Focus Study Technique (تکنیک مطالعه پومودورو) */}
-        {activeTab === 'pomodoro' && (
-          <div className="animate-tab-in">
-            <PomodoroSection
-              onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
-            />
-          </div>
-        )}
+          {/* TAB 5: Counseling Articles & Study Quality Tips (۱۸ مقاله مشاوره‌ای) */}
+          {activeTab === 'articles' && (
+            <motion.div
+              key="tab-articles"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <CounselingArticlesPage />
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-        {/* TAB 5: Counseling Articles & Study Quality Tips (۱۸ مقاله مشاوره‌ای) */}
-        {activeTab === 'articles' && (
-          <div className="animate-tab-in">
-            <CounselingArticlesPage />
-          </div>
-        )}
+          {/* TAB 6: Test Sources Guide (بانک منابع تستی کنکور) */}
+          {activeTab === 'sources' && (
+            <motion.div
+              key="tab-sources"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <TestSourcesPage />
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
 
-        {/* TAB 6: Test Sources Guide (بانک منابع تستی کنکور) */}
-        {activeTab === 'sources' && (
-          <div className="animate-tab-in">
-            <TestSourcesPage />
-          </div>
-        )}
-
-        {/* TAB 7: Majors & Top Careers Guide (معرفی رشته‌ها و شغل‌ها) */}
-        {activeTab === 'majors' && (
-          <div className="animate-tab-in">
-            <MajorsPage />
-          </div>
-        )}
+          {/* TAB 7: Majors & Top Careers Guide (معرفی رشته‌ها و شغل‌ها) */}
+          {activeTab === 'majors' && (
+            <motion.div
+              key="tab-majors"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <MajorsPage />
+              <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
-
-      {/* Printable full plan (hidden on screen, printed via چاپ A4) */}
-      <PrintablePlan
-        headerInfo={headerInfo}
-        schedule={schedule}
-        partTimes={partTimes}
-        overviewList={overviewList}
-        reports={reports}
-      />
 
       {/* Footer */}
       <footer className="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-400 no-print mt-auto">
@@ -406,15 +426,38 @@ export default function App() {
               پلنر کلینیک کنکور · سامانه برنامه‌ریزی تخصصی و مشاوره کنکور
             </span>
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-cyan-400">
-            <span>کانال تلگرام: CliniC_Konkur2026@</span>
-            <span>رزرو مشاوره: Poshtibani_CliniCk_konkur2026@</span>
+          <div className="flex items-center gap-4 text-[11px] text-cyan-400 flex-wrap justify-center">
+            <button
+              onClick={() => setIsPlayProtectOpen(true)}
+              className="text-emerald-400 hover:underline font-bold"
+            >
+              🛡️ رفع اخطار سپر امنیتی گوگل
+            </button>
+            <button
+              onClick={() => setIsPrintModalOpen(true)}
+              className="text-indigo-300 hover:underline font-bold"
+            >
+              🖨️ چاپ برنامه هفتگی (A4)
+            </button>
+            <a
+              href="https://t.me/CliniC_Konkur2026"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline"
+            >
+              کانال تلگرام: CliniC_Konkur2026@
+            </a>
+            <a
+              href="https://t.me/Poshtibani_CliniCk_konkur2026"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline"
+            >
+              رزرو مشاوره: Poshtibani_CliniCk_konkur2026@
+            </a>
           </div>
         </div>
       </footer>
-
-      {/* Slim rotating promo ticker above the footer */}
-      <PromoTicker />
 
       {/* Part Edit Modal */}
       {selectedSlotData && (
@@ -442,6 +485,27 @@ export default function App() {
         onClose={() => setIsTimerModalOpen(false)}
         activeSlot={timerActiveSlot}
         onMarkSlotCompleted={handleMarkSlotCompletedFromTimer}
+      />
+
+      {/* Print Schedule A4 / PDF Modal */}
+      <PrintScheduleModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        schedule={schedule}
+        headerInfo={headerInfo}
+        partTimes={partTimes}
+      />
+
+      {/* Google Play Protect Solution Modal */}
+      <PlayProtectGuideModal
+        isOpen={isPlayProtectOpen}
+        onClose={() => setIsPlayProtectOpen(false)}
+      />
+
+      {/* Screenshots and ZIP Download Gallery Modal */}
+      <ScreenshotsModal
+        isOpen={isScreenshotsModalOpen}
+        onClose={() => setIsScreenshotsModalOpen(false)}
       />
 
       {/* Welcome Screen & Clinic Konkur Promo Modal */}

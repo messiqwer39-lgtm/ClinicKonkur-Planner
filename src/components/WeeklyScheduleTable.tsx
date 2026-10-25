@@ -15,6 +15,7 @@ import {
   XCircle,
   Plus,
   Play,
+  Printer,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -25,6 +26,7 @@ interface WeeklyScheduleTableProps {
   onOpenTimeModal: () => void;
   onQuickToggleStatus: (dayId: string, partId: string) => void;
   onStartTimer: (slot: PartSlot) => void;
+  onOpenPrintModal?: () => void;
 }
 
 export const WeeklyScheduleTable: React.FC<WeeklyScheduleTableProps> = ({
@@ -34,6 +36,7 @@ export const WeeklyScheduleTable: React.FC<WeeklyScheduleTableProps> = ({
   onOpenTimeModal,
   onQuickToggleStatus,
   onStartTimer,
+  onOpenPrintModal,
 }) => {
   const getStatusBadge = (status: PartStatus) => {
     switch (status) {
@@ -92,13 +95,26 @@ export const WeeklyScheduleTable: React.FC<WeeklyScheduleTableProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenTimeModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 rounded-lg transition-colors shrink-0 no-print"
-        >
-          <Clock className="w-3.5 h-3.5" />
-          <span>تنظیم ساعت پارت‌ها (بالای جدول)</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {onOpenPrintModal && (
+            <button
+              onClick={onOpenPrintModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 rounded-lg transition-colors shrink-0 no-print"
+              title="چاپ برنامه استاندارد A4 یا ذخیره PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-emerald-600" />
+              <span>چاپ برنامه (A4 / PDF)</span>
+            </button>
+          )}
+
+          <button
+            onClick={onOpenTimeModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 rounded-lg transition-colors shrink-0 no-print"
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>تنظیم ساعت پارت‌ها</span>
+          </button>
+        </div>
       </div>
 
       {/* Responsive Horizontal Scroll Container */}

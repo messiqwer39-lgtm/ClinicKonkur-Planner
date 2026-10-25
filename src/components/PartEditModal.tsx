@@ -4,7 +4,9 @@ import {
   SubjectKey,
   SUBJECT_CONFIGS,
   PartStatus,
+  MajorType,
 } from '../types/planner';
+import { ALL_MAJOR_SUBJECTS, MAJOR_NAMES } from '../data/majorSubjects';
 import { toPersianDigits, playChime } from '../utils/helpers';
 import confetti from 'canvas-confetti';
 import {
@@ -18,6 +20,8 @@ import {
   HelpCircle,
   Play,
   RotateCcw,
+  Sparkles,
+  Filter,
 } from 'lucide-react';
 
 interface PartEditModalProps {
@@ -47,6 +51,7 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
   const [timeRange, setTimeRange] = useState(slot.timeRange);
   const [status, setStatus] = useState<PartStatus>(slot.status);
   const [notes, setNotes] = useState(slot.notes || '');
+  const [selectedMajorFilter, setSelectedMajorFilter] = useState<MajorType>('all');
 
   const handleStatusChange = (newStatus: PartStatus) => {
     setStatus(newStatus);
@@ -82,28 +87,38 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
 
   const currentConfig = subject ? SUBJECT_CONFIGS[subject] : null;
 
+  // Filter subjects based on major filter
+  const filteredSubjectKeys = (Object.keys(SUBJECT_CONFIGS) as SubjectKey[]).filter((k) => {
+    if (selectedMajorFilter === 'all') return true;
+    const cfg = SUBJECT_CONFIGS[k];
+    return cfg.major === selectedMajorFilter || cfg.major === 'all';
+  });
+
+  // Find rich topics from ALL_MAJOR_SUBJECTS if available
+  const richSubjectDetail = ALL_MAJOR_SUBJECTS.find((s) => s.id === subject);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
       <div
-        className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-indigo-50/50">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-indigo-100 text-indigo-800">
                 پارت {toPersianDigits(slot.partNumber)} ({dayName})
               </span>
-              <span className="text-xs text-slate-500 font-medium">۱.۵ ساعت</span>
+              <span className="text-xs text-slate-500 font-medium">۱.۵ ساعت مطالعه</span>
             </div>
-            <h3 className="text-sm font-bold text-slate-800 mt-1">
-              تنظیم و ثبت جزئیات مطالعه
+            <h3 className="text-sm font-bold text-slate-900 mt-1">
+              تنظیم و ثبت جزئیات مطالعه پارت
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -111,9 +126,9 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-4 text-xs">
-          {/* Time range for this part */}
+          {/* Time range */}
           <div>
-            <label className="text-slate-600 font-semibold block mb-1">
+            <label className="text-slate-700 font-bold block mb-1">
               ساعت برگزاری پارت (۱.۵ ساعته):
             </label>
             <div className="flex items-center gap-2">
@@ -122,17 +137,45 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
                 type="text"
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono"
                 placeholder="مثلاً: ۰۷:۰۰ - ۰۸:۳۰"
               />
             </div>
           </div>
 
+          {/* Major Filter Tabs */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-slate-700 font-bold block">فیلتر رشته تحصیلی و دروس:</label>
+              <div className="flex items-center gap-1 text-[11px] text-indigo-600 font-medium">
+                <Filter className="w-3 h-3" />
+                <span>رشته خود را انتخاب کنید</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-xl">
+              {(['all', 'experimental', 'mathematics', 'humanities'] as MajorType[]).map((mKey) => (
+                <button
+                  key={mKey}
+                  type="button"
+                  onClick={() => setSelectedMajorFilter(mKey)}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all truncate text-center ${
+                    selectedMajorFilter === mKey
+                      ? 'bg-white text-indigo-900 shadow-xs font-black'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {MAJOR_NAMES[mKey].name.split(' ')[0]} {MAJOR_NAMES[mKey].icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Subject selector */}
           <div>
-            <label className="text-slate-600 font-semibold block mb-2">انتخاب درس:</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {(Object.keys(SUBJECT_CONFIGS) as SubjectKey[]).map((key) => {
+            <label className="text-slate-700 font-bold block mb-2">انتخاب درس:</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-slate-100 rounded-xl bg-slate-50/50">
+              {filteredSubjectKeys.map((key) => {
                 const conf = SUBJECT_CONFIGS[key];
                 const isSelected = subject === key;
                 return (
@@ -145,9 +188,9 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
                         setTopic(conf.sampleTopics[0]);
                       }
                     }}
-                    className={`flex items-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
+                    className={`flex items-center gap-2 p-2 rounded-xl border text-xs font-medium transition-all text-right ${
                       isSelected
-                        ? `${conf.badgeBg} ring-2 ring-indigo-500/30 font-bold shadow-2xs`
+                        ? `${conf.badgeBg} ring-2 ring-indigo-500/30 font-bold shadow-xs`
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -163,10 +206,32 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
           </div>
 
           {/* Suggested topics if subject selected */}
-          {currentConfig && currentConfig.sampleTopics.length > 0 && (
+          {richSubjectDetail ? (
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2">
+              <span className="text-[11px] text-slate-600 font-bold block">
+                مباحث پرتکرار کنکوری {richSubjectDetail.title}:
+              </span>
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                {[
+                  ...richSubjectDetail.grade10Topics,
+                  ...richSubjectDetail.grade11Topics,
+                  ...richSubjectDetail.grade12Topics,
+                ].map((sTopic, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleQuickTopic(sTopic)}
+                    className="text-[11px] bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-700 px-2 py-1 rounded-lg transition-colors text-right"
+                  >
+                    {sTopic}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : currentConfig && currentConfig.sampleTopics.length > 0 ? (
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
               <span className="text-[11px] text-slate-500 block mb-1.5">
-                مباحث پیشنهادی کنکوری {currentConfig.title}:
+                مباحث پیشنهادی {currentConfig.title}:
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {currentConfig.sampleTopics.map((sTopic, i) => (
@@ -181,18 +246,18 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Topic / مبحث مطالعه */}
           <div>
-            <label className="text-slate-600 font-semibold block mb-1">
+            <label className="text-slate-700 font-bold block mb-1">
               مبحث، فصل یا کار این پارت:
             </label>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               placeholder="مثلاً: زیست دهم: گوارش و جذب مواد ص ۱۸ تا ۲۵"
             />
           </div>
@@ -200,7 +265,7 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
           {/* Tests Target & Source Pages */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-slate-600 font-semibold block mb-1">
+              <label className="text-slate-700 font-bold block mb-1">
                 تعداد تست هدف‌گذاری شده:
               </label>
               <div className="flex items-center gap-1.5">
@@ -210,12 +275,12 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
                   step="5"
                   value={targetTests}
                   onChange={(e) => setTargetTests(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 />
                 <button
                   type="button"
                   onClick={() => setTargetTests((prev) => Math.max(0, prev + 10))}
-                  className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-bold"
+                  className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-bold"
                 >
                   +۱۰
                 </button>
@@ -223,14 +288,14 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
             </div>
 
             <div>
-              <label className="text-slate-600 font-semibold block mb-1">
+              <label className="text-slate-700 font-bold block mb-1">
                 صفحات یا منبع مطالعه:
               </label>
               <input
                 type="text"
                 value={targetPages}
                 onChange={(e) => setTargetPages(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 placeholder="خیلی‌سبز ص ۳۰ تا ۴۵"
               />
             </div>
@@ -238,15 +303,17 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
 
           {/* Execution Status */}
           <div>
-            <label className="text-slate-600 font-semibold block mb-2">وضعیت اجرای پارت:</label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <label className="text-slate-700 font-bold block mb-1.5">
+              وضعیت اجرای پارت:
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => handleStatusChange('planned')}
-                className={`p-2 rounded-xl border text-center transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold text-xs transition-colors ${
                   status === 'planned'
-                    ? 'bg-slate-100 border-slate-400 font-bold text-slate-800 shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-slate-800 text-white border-slate-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                 }`}
               >
                 برنامه‌ریزی
@@ -254,95 +321,111 @@ export const PartEditModal: React.FC<PartEditModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleStatusChange('in_progress')}
-                className={`p-2 rounded-xl border text-center transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold text-xs transition-colors ${
                   status === 'in_progress'
-                    ? 'bg-blue-50 border-blue-400 font-bold text-blue-700 shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
                 }`}
               >
-                در حال خواندن
+                در حال مطالعه
               </button>
               <button
                 type="button"
                 onClick={() => handleStatusChange('completed')}
-                className={`p-2 rounded-xl border text-center transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold text-xs transition-colors ${
                   status === 'completed'
-                    ? 'bg-emerald-50 border-emerald-400 font-bold text-emerald-700 shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
                 }`}
               >
-                ✅ کامل شد
+                انجام شد ✓
               </button>
               <button
                 type="button"
                 onClick={() => handleStatusChange('partial')}
-                className={`p-2 rounded-xl border text-center transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold text-xs transition-colors ${
                   status === 'partial'
-                    ? 'bg-amber-50 border-amber-400 font-bold text-amber-700 shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
                 }`}
               >
-                ⚠️ ناقص
-              </button>
-              <button
-                type="button"
-                onClick={() => handleStatusChange('missed')}
-                className={`p-2 rounded-xl border text-center transition-all ${
-                  status === 'missed'
-                    ? 'bg-rose-50 border-rose-400 font-bold text-rose-700 shadow-2xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                ❌ خوانده نشد
+                ناقص / نیمه‌کاره
               </button>
             </div>
           </div>
 
+          {/* Completed Tests Count if completed or partial */}
+          {(status === 'completed' || status === 'partial') && (
+            <div className="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-200/80">
+              <label className="text-emerald-900 font-bold block mb-1">
+                تعداد تست‌های حل‌شده واقعی:
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  value={completedTests}
+                  onChange={(e) => setCompletedTests(Number(e.target.value))}
+                  className="w-32 bg-white border border-emerald-300 rounded-xl px-2.5 py-1.5 text-xs text-emerald-950 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+                <span className="text-emerald-700 text-xs">تست حل شد (از {targetTests} تست هدف)</span>
+              </div>
+            </div>
+          )}
+
           {/* Notes */}
           <div>
-            <label className="text-slate-600 font-semibold block mb-1">
-              یادداشت یا اشکال‌های این پارت:
+            <label className="text-slate-700 font-bold block mb-1">
+              یادداشت مشاور یا داوطلب برای این پارت:
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
-              placeholder="نکته مهم، تست‌های نشان‌دار، یا سوالاتی که باید از معلم بپرسم..."
+              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              placeholder="نکات، دام‌های تستی یا یادآوری مرور..."
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between">
-          <div>
-            {onStartTimer && (
-              <button
-                type="button"
-                onClick={() => {
-                  onStartTimer({ ...slot, subject, topic, timeRange });
-                  onClose();
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
-              >
-                <Play className="w-3.5 h-3.5" />
-                <span>شروع تایمر این پارت</span>
-              </button>
-            )}
-          </div>
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+          {onStartTimer && (
+            <button
+              type="button"
+              onClick={() => {
+                onStartTimer({
+                  ...slot,
+                  subject,
+                  topic,
+                  targetTests: Number(targetTests) || 0,
+                  completedTests: Number(completedTests) || 0,
+                  targetPages,
+                  timeRange,
+                  status,
+                  notes,
+                });
+                onClose();
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors"
+            >
+              <Play className="w-3.5 h-3.5 fill-indigo-600" />
+              <span>شروع پومودورو</span>
+            </button>
+          )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-auto">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-lg hover:bg-slate-200/50 transition-colors"
+              className="px-4 py-2 text-slate-600 hover:text-slate-800 text-xs font-medium rounded-xl hover:bg-slate-200/50"
             >
               انصراف
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs hover:shadow transition-all"
+              className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black shadow-md transition-all hover:scale-105"
             >
               ذخیره تغییرات
             </button>

@@ -13,8 +13,10 @@ import {
   Info,
   WifiOff,
   BookMarked,
+  ShieldCheck,
 } from 'lucide-react';
 import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
+
 export type AppTab = 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors' | 'sources';
 
 interface NavbarProps {
@@ -23,7 +25,9 @@ interface NavbarProps {
   onPrint: () => void;
   onReset: () => void;
   onLoadSample: () => void;
+  onOpenScreenshots: () => void;
   onOpenWelcome: () => void;
+  onOpenPlayProtect: () => void;
   weekTitle: string;
 }
 
@@ -33,7 +37,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onPrint,
   onReset,
   onLoadSample,
+  onOpenScreenshots,
   onOpenWelcome,
+  onOpenPlayProtect,
   weekTitle,
 }) => {
   const { isInstallable, install, isIOS } = usePWAInstall();
@@ -77,6 +83,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Action Mobile Icons */}
           <div className="flex items-center gap-1 xl:hidden">
+            <button
+              onClick={onOpenPlayProtect}
+              className="p-2 text-emerald-400 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
+              title="حل مشکل سپر امنیتی گوگل (بازار و مایکت)"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </button>
             <button
               onClick={onOpenWelcome}
               className="p-2 text-cyan-400 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
@@ -183,6 +196,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Actions & Android PWA Install */}
         <div className="hidden xl:flex items-center gap-2 shrink-0">
+          {/* Google Play Protect Solution Guide button */}
+          <button
+            onClick={onOpenPlayProtect}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-emerald-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition-transform hover:scale-105 whitespace-nowrap"
+            title="راهنمای رفع اخطار سپر امنیتی گوگل و انتشار بدون اخطار در بازار و مایکت"
+          >
+            <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+            <span>رفع مشکل سپر گوگل</span>
+          </button>
+
           {/* PWA Install Button for Android / Desktop */}
           {isInstallable && (
             <button
@@ -214,11 +237,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
+            onClick={onOpenScreenshots}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl transition-colors whitespace-nowrap"
+            title="دانلود عکس‌ها و فایل ZIP"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>دانلود ZIP</span>
+          </button>
+
+          <button
             onClick={onPrint}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl shadow-xs transition-all whitespace-nowrap"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>چاپ برنامه</span>
+            <span>چاپ A4</span>
           </button>
         </div>
       </div>

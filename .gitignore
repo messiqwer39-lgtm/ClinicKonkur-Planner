@@ -1,11 +1,12 @@
 node_modules/
 build/
 dist/
-dev-dist/
-temp_gallery/
 coverage/
 .DS_Store
 *.log
-*.apk
 .env*
 !.env.example
+*.zip
+*.apk
+dev-dist/
+
