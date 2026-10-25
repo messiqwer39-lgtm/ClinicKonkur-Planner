@@ -17,7 +17,8 @@ import { DailyProgressWidget } from './components/DailyProgressWidget';
 import { KonkurCountdown } from './components/KonkurCountdown';
 import { ClinicBanner } from './components/ClinicBanner';
 import { PrintScheduleModal } from './components/PrintScheduleModal';
-import { PlayProtectGuideModal } from './components/PlayProtectGuideModal';
+import { RotateScreenPrompt } from './components/RotateScreenPrompt';
+import { AppUserGuideModal } from './components/AppUserGuideModal';
 
 import {
   DaySchedule,
@@ -69,7 +70,7 @@ export default function App() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isScreenshotsModalOpen, setIsScreenshotsModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [isPlayProtectOpen, setIsPlayProtectOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Welcome Screen state: show on startup unless dismissed by user
   const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(() => {
@@ -247,7 +248,7 @@ export default function App() {
         onLoadSample={handleLoadSample}
         onOpenScreenshots={() => setIsScreenshotsModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen(true)}
-        onOpenPlayProtect={() => setIsPlayProtectOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
         weekTitle={headerInfo.weekNumber}
       />
 
@@ -263,6 +264,9 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
+              {/* Gentle prompt suggesting landscape orientation on mobile */}
+              <RotateScreenPrompt />
+
               {/* Animated Konkur Countdown Timer to 10 Tir 1406 */}
               <KonkurCountdown />
 
@@ -428,17 +432,25 @@ export default function App() {
           </div>
           <div className="flex items-center gap-4 text-[11px] text-cyan-400 flex-wrap justify-center">
             <button
-              onClick={() => setIsPlayProtectOpen(true)}
-              className="text-emerald-400 hover:underline font-bold"
+              onClick={() => setIsGuideOpen(true)}
+              className="text-cyan-300 hover:underline font-bold"
             >
-              🛡️ رفع اخطار سپر امنیتی گوگل
+              📖 راهنمای کار با برنامه
             </button>
             <button
               onClick={() => setIsPrintModalOpen(true)}
               className="text-indigo-300 hover:underline font-bold"
             >
-              🖨️ چاپ برنامه هفتگی (A4)
+              🖨️ چاپ و ذخیره تصویر برنامه (A4)
             </button>
+            <a
+              href="/Google-Play-Protect-Appeal-Kit.zip"
+              download="Google-Play-Protect-Appeal-Kit.zip"
+              className="text-emerald-400 hover:underline font-bold"
+              title="دانلود بسته ZIP مدارک بازبینی سپر گوگل و انتشار در بازار و مایکت"
+            >
+              📦 بسته ZIP فرم بازبینی گوگل
+            </a>
             <a
               href="https://t.me/CliniC_Konkur2026"
               target="_blank"
@@ -487,7 +499,7 @@ export default function App() {
         onMarkSlotCompleted={handleMarkSlotCompletedFromTimer}
       />
 
-      {/* Print Schedule A4 / PDF Modal */}
+      {/* Print & Offline Schedule Image Modal */}
       <PrintScheduleModal
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
@@ -496,10 +508,10 @@ export default function App() {
         partTimes={partTimes}
       />
 
-      {/* Google Play Protect Solution Modal */}
-      <PlayProtectGuideModal
-        isOpen={isPlayProtectOpen}
-        onClose={() => setIsPlayProtectOpen(false)}
+      {/* App User Guide Modal */}
+      <AppUserGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
       />
 
       {/* Screenshots and ZIP Download Gallery Modal */}

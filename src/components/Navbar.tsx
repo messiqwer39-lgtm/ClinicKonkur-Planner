@@ -13,7 +13,7 @@ import {
   Info,
   WifiOff,
   BookMarked,
-  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
 
@@ -27,7 +27,7 @@ interface NavbarProps {
   onLoadSample: () => void;
   onOpenScreenshots: () => void;
   onOpenWelcome: () => void;
-  onOpenPlayProtect: () => void;
+  onOpenGuide: () => void;
   weekTitle: string;
 }
 
@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLoadSample,
   onOpenScreenshots,
   onOpenWelcome,
-  onOpenPlayProtect,
+  onOpenGuide,
   weekTitle,
 }) => {
   const { isInstallable, install, isIOS } = usePWAInstall();
@@ -84,11 +84,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Quick Action Mobile Icons */}
           <div className="flex items-center gap-1 xl:hidden">
             <button
-              onClick={onOpenPlayProtect}
-              className="p-2 text-emerald-400 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
-              title="حل مشکل سپر امنیتی گوگل (بازار و مایکت)"
+              onClick={onOpenGuide}
+              className="p-2 text-cyan-300 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
+              title="راهنمای کار با اپلیکیشن"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <HelpCircle className="w-4 h-4 text-cyan-400" />
             </button>
             <button
               onClick={onOpenWelcome}
@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={onPrint}
-              aria-label="چاپ برنامه"
+              aria-label="چاپ و دانلود عکس برنامه"
               className="p-2 text-slate-300 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
             >
               <Printer className="w-4 h-4" />
@@ -196,14 +196,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Actions & Android PWA Install */}
         <div className="hidden xl:flex items-center gap-2 shrink-0">
-          {/* Google Play Protect Solution Guide button */}
+          {/* App User Guide button */}
           <button
-            onClick={onOpenPlayProtect}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-emerald-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition-transform hover:scale-105 whitespace-nowrap"
-            title="راهنمای رفع اخطار سپر امنیتی گوگل و انتشار بدون اخطار در بازار و مایکت"
+            onClick={onOpenGuide}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-cyan-200 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 rounded-xl shadow-xs transition-all hover:scale-105 whitespace-nowrap"
+            title="راهنمای جامع کار با امکانات و ویژگی‌های برنامه"
           >
-            <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
-            <span>رفع مشکل سپر گوگل</span>
+            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+            <span>راهنمای کار با اپ</span>
           </button>
 
           {/* PWA Install Button for Android / Desktop */}

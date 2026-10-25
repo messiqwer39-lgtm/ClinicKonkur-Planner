@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DaySchedule,
   WeeklyHeaderInfo,
@@ -6,7 +6,18 @@ import {
   DAYS_INFO,
 } from '../types/planner';
 import { toPersianDigits } from '../utils/helpers';
-import { Printer, X, Calendar, CheckSquare, Sparkles, BookOpen } from 'lucide-react';
+import {
+  Printer,
+  X,
+  Calendar,
+  CheckSquare,
+  Sparkles,
+  BookOpen,
+  Download,
+  Image,
+  CheckCircle2,
+  FileText,
+} from 'lucide-react';
 
 interface PrintScheduleModalProps {
   isOpen: boolean;
@@ -23,10 +34,199 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
   headerInfo,
   partTimes,
 }) => {
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
   if (!isOpen) return null;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Pure Client-Side Offline Canvas Image Generator
+  const handleDownloadOfflineImage = () => {
+    setIsExporting(true);
+
+    try {
+      const canvas = document.createElement('canvas');
+      const width = 1400;
+      const height = 950;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        window.print();
+        setIsExporting(false);
+        return;
+      }
+
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      // Header Banner
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, 100);
+
+      // Accent gradient line
+      ctx.fillStyle = '#06b6d4';
+      ctx.fillRect(0, 96, width, 4);
+
+      // Header Text (RTL simulation)
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px Vazirmatn, Tahoma, sans-serif';
+      ctx.fillText('پلنر تخصصی و جدول برنامه‌ریزی هفتگی کلینیک کنکور', width - 40, 55);
+
+      ctx.font = '14px Vazirmatn, Tahoma, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(
+        `عنوان: ${headerInfo.weekNumber || 'برنامه هفتگی'}  |  بازه زمانی: ${toPersianDigits(headerInfo.startDate || '---')} تا ${toPersianDigits(headerInfo.endDate || '---')}`,
+        width - 40,
+        82
+      );
+
+      ctx.direction = 'ltr';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('@Poshtibani_CliniCk_konkur2026', 40, 60);
+
+      // Table Geometry
+      const startX = 40;
+      const startY = 125;
+      const tableWidth = width - 80;
+      const dayColWidth = 140;
+      const partColWidth = (tableWidth - dayColWidth) / 8;
+      const headerRowHeight = 55;
+      const dayRowHeight = 85;
+
+      // Table Header Row
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillRect(startX, startY, tableWidth, headerRowHeight);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(startX, startY, tableWidth, headerRowHeight);
+
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 16px Vazirmatn, Tahoma, sans-serif';
+      ctx.fillText('روز هفته', startX + tableWidth - dayColWidth / 2, startY + 34);
+
+      // 8 Part column headers
+      for (let i = 0; i < 8; i++) {
+        const x = startX + tableWidth - dayColWidth - (i + 1) * partColWidth;
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.moveTo(x + partColWidth, startY);
+        ctx.lineTo(x + partColWidth, startY + headerRowHeight);
+        ctx.stroke();
+
+        ctx.fillStyle = '#1e1b4b';
+        ctx.font = 'bold 14px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillText(`پارت ${toPersianDigits(i + 1)}`, x + partColWidth / 2, startY + 24);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '11px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillText(toPersianDigits(partTimes[i] || `پارت ${i + 1}`), x + partColWidth / 2, startY + 44);
+      }
+
+      // Draw 7 Days
+      schedule.forEach((day, dayIndex) => {
+        const currentY = startY + headerRowHeight + dayIndex * dayRowHeight;
+
+        // Alternate row background
+        ctx.fillStyle = dayIndex % 2 === 0 ? '#ffffff' : '#f8fafc';
+        ctx.fillRect(startX, currentY, tableWidth, dayRowHeight);
+        ctx.strokeRect(startX, currentY, tableWidth, dayRowHeight);
+
+        // Day label
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 16px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillText(day.dayName, startX + tableWidth - dayColWidth / 2, currentY + 38);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillText(toPersianDigits(day.dateStr || ''), startX + tableWidth - dayColWidth / 2, currentY + 58);
+
+        // Draw parts
+        day.parts.forEach((part, partIndex) => {
+          const partX = startX + tableWidth - dayColWidth - (partIndex + 1) * partColWidth;
+
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.beginPath();
+          ctx.moveTo(partX + partColWidth, currentY);
+          ctx.lineTo(partX + partColWidth, currentY + dayRowHeight);
+          ctx.stroke();
+
+          if (part.subject) {
+            const cfg = SUBJECT_CONFIGS[part.subject as keyof typeof SUBJECT_CONFIGS];
+            ctx.fillStyle = cfg?.accentColor || '#0284c7';
+            ctx.font = 'bold 13px Vazirmatn, Tahoma, sans-serif';
+            ctx.fillText(cfg?.shortTitle || part.subject, partX + partColWidth / 2, currentY + 24);
+
+            ctx.fillStyle = '#334155';
+            ctx.font = '11px Vazirmatn, Tahoma, sans-serif';
+            const topicText = part.topic ? (part.topic.length > 18 ? part.topic.slice(0, 16) + '..' : part.topic) : '';
+            ctx.fillText(topicText, partX + partColWidth / 2, currentY + 44);
+
+            ctx.fillStyle = part.status === 'completed' ? '#059669' : '#64748b';
+            ctx.font = 'bold 11px Vazirmatn, Tahoma, sans-serif';
+            const statusLabel = part.status === 'completed' ? '✓ انجام شد' : `${toPersianDigits(part.targetTests || 0)} تست`;
+            ctx.fillText(statusLabel, partX + partColWidth / 2, currentY + 66);
+          } else {
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('---', partX + partColWidth / 2, currentY + 48);
+          }
+        });
+      });
+
+      // Footer Summary Box
+      const footerY = startY + headerRowHeight + 7 * dayRowHeight + 15;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(startX, footerY, tableWidth, 90);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.strokeRect(startX, footerY, tableWidth, 90);
+
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 13px Vazirmatn, Tahoma, sans-serif';
+      ctx.fillText(
+        `جمله انگیزشی هفته: "${headerInfo.motivationalQuote}"`,
+        startX + tableWidth - 20,
+        footerY + 35
+      );
+
+      ctx.font = '12px Vazirmatn, Tahoma, sans-serif';
+      ctx.fillStyle = '#475569';
+      ctx.fillText(
+        `کلینیک کنکور | کانال تلگرام: CliniC_Konkur2026@ | رزرو مشاوره VIP و پشتیبانی: Poshtibani_CliniCk_konkur2026@`,
+        startX + tableWidth - 20,
+        footerY + 65
+      );
+
+      // Trigger Instant Offline Download
+      const dataUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataUrl;
+      downloadLink.download = `برنامه_هفتگی_کلینیک_کنکور_${headerInfo.startDate || 'هفته'}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch (err) {
+      console.error('Offline download failed, falling back to print', err);
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Calculations for summary
@@ -49,31 +249,44 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
       {/* Modal Container */}
-      <div className="bg-white text-slate-900 rounded-3xl max-w-6xl w-full p-4 sm:p-8 shadow-2xl relative my-auto overflow-hidden print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none">
-        {/* Print Action Bar (Hidden on actual print) */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 no-print">
+      <div className="bg-white text-slate-900 rounded-3xl max-w-6xl w-full p-4 sm:p-7 shadow-2xl relative my-auto overflow-hidden print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none">
+        {/* Action Bar (Hidden on actual print) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 mb-4 border-b border-slate-200 gap-3 no-print">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
               <Printer className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">
-                پیش‌نمایش چاپ برنامه هفتگی (نسخه استاندارد A4)
+              <h3 className="text-base font-black text-slate-900">
+                چاپ و ذخیره آفلاین برنامه هفتگی
               </h3>
               <p className="text-xs text-slate-500">
-                با کلیک روی دکمه چاپ می‌توانید خروجی کاغذی یا فایل PDF استاندارد با کیفیت بالا دریافت کنید.
+                بدون نیاز به اینترنت، برنامه را در گالری گوشی ذخیره کنید یا به صورت PDF چاپ نمایید.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            {/* OFFLINE SAVE TO GALLERY BUTTON */}
+            <button
+              onClick={handleDownloadOfflineImage}
+              disabled={isExporting}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all hover:scale-105 cursor-pointer"
+              title="ذخیره تصویر کامل برنامه در گالری گوشی"
+            >
+              <Image className="w-4 h-4" />
+              <span>{isExporting ? 'در حال ایجاد عکس...' : 'ذخیره عکس در گالری (PNG آفلاین)'}</span>
+            </button>
+
+            {/* PRINT / SAVE AS PDF BUTTON */}
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all hover:scale-105 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>چاپ مستقیم یا ذخیره PDF</span>
             </button>
+
             <button
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors"
@@ -82,6 +295,14 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Offline Download Success Notification */}
+        {downloadSuccess && (
+          <div className="mb-4 bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-2xl flex items-center gap-2 text-xs font-bold no-print animate-in fade-in duration-300">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>تصویر برنامه هفتگی با موفقیت در پوشه دانلودها و گالری دستگاه شما ذخیره شد!</span>
+          </div>
+        )}
 
         {/* Printable Sheet View */}
         <div className="printable-sheet bg-white text-slate-900 text-right font-sans p-2 sm:p-4 border border-slate-200 rounded-2xl print:border-none print:p-0">

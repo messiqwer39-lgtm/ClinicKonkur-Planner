@@ -1,0 +1,35 @@
+========================================================================
+   راهنمای تکمیل کادر به کادر فرم بازبینی سپر امنیتی گوگل (Google Play Protect)
+   برای اپلیکیشن: پلنر کلینیک کنکور (com.clinickonkur.planner)
+========================================================================
+
+آدرس مستقیم فرم بازبینی گوگل:
+https://support.google.com/googleplay/android-developer/contact/protectappeals
+
+------------------------------------------------------------------------
+کادر ۱: Email address *
+maedeh.abdollahi85@gmail.com
+
+------------------------------------------------------------------------
+کادر ۲: Developer name
+ClinicKonkur
+
+------------------------------------------------------------------------
+کادر ۳: Application package name *
+com.clinickonkur.planner
+
+------------------------------------------------------------------------
+کادر ۴: SHA256 Hash of the apk of the uploaded file on Virus Total *
+(هش ۶۴ کاراکتری زیر را دقیقاً در این کادر کپی کنید - بدون هیچ فاصله یا خط تیره):
+b071acda8e8853c45d2f05dad8530c7ed8220125327ec05eb5b3f7b13ee6fae0
+
+------------------------------------------------------------------------
+کادر ۵: Additional information to support your appeal *
+متن انگلیسی زیر را عیناً در این کادر قرار دهید:
+
+This is an educational study planner application for Iranian high school and university entrance exam (Konkur) students. It contains NO malware, NO ad fraud, NO deceptive background services, and NO harmful downloaders. It is an offline productivity tool published on Cafe Bazaar and Myket. Please verify and whitelist our application package and certificate in Google Play Protect. Thank you.
+
+------------------------------------------------------------------------
+لینک مستقیم دانلود فایل APK نسخه ۱.۳.۰ روی گیت‌هاب:
+https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v1.3.0/ClinicPlan-v1.3.0.apk
+========================================================================
