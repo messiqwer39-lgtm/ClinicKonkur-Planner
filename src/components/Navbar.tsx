@@ -15,7 +15,6 @@ import {
   BookMarked,
 } from 'lucide-react';
 import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
-
 export type AppTab = 'schedule' | 'overview' | 'report' | 'pomodoro' | 'articles' | 'majors' | 'sources';
 
 interface NavbarProps {
@@ -24,7 +23,6 @@ interface NavbarProps {
   onPrint: () => void;
   onReset: () => void;
   onLoadSample: () => void;
-  onOpenScreenshots: () => void;
   onOpenWelcome: () => void;
   weekTitle: string;
 }
@@ -35,7 +33,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onPrint,
   onReset,
   onLoadSample,
-  onOpenScreenshots,
   onOpenWelcome,
   weekTitle,
 }) => {
@@ -186,17 +183,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Actions & Android PWA Install */}
         <div className="hidden xl:flex items-center gap-2 shrink-0">
-          {/* APK Direct Download Button for Android */}
-          <a
-            href="/ClinicPlan-v1.1.0.apk"
-            download="ClinicPlan-v1.1.0.apk"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black text-emerald-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition-transform hover:scale-105 whitespace-nowrap"
-            title="دانلود مستقیم فایل نصبی کلینیک پلن (APK اندروید برای کافه بازار و مایکت)"
-          >
-            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>دانلود APK کلینیک پلن</span>
-          </a>
-
           {/* PWA Install Button for Android / Desktop */}
           {isInstallable && (
             <button
@@ -228,20 +214,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={onOpenScreenshots}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl transition-colors whitespace-nowrap"
-            title="دانلود عکس‌ها و فایل ZIP"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>دانلود ZIP</span>
-          </button>
-
-          <button
             onClick={onPrint}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl shadow-xs transition-all whitespace-nowrap"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>چاپ A4</span>
+            <span>چاپ برنامه</span>
           </button>
         </div>
       </div>

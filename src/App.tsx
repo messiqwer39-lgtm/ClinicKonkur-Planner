@@ -7,8 +7,11 @@ import { ReportCardPage } from './components/ReportCardPage';
 import { PartEditModal } from './components/PartEditModal';
 import { PartTimeEditModal } from './components/PartTimeEditModal';
 import { StudyTimerModal } from './components/StudyTimerModal';
-import { ScreenshotsModal } from './components/ScreenshotsModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { TodayProgressWidget } from './components/TodayProgressWidget';
+import { KonkurCountdown } from './components/KonkurCountdown';
+import { PromoBannerStrip, PromoTicker } from './components/PromoBannerStrip';
+import { PrintablePlan } from './components/PrintablePlan';
 import { CounselingArticlesPage } from './components/CounselingArticlesPage';
 import { MajorsPage } from './components/MajorsPage';
 import { PomodoroSection } from './components/PomodoroSection';
@@ -61,16 +64,27 @@ export default function App() {
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
   const [timerActiveSlot, setTimerActiveSlot] = useState<PartSlot | null>(null);
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
-  const [isScreenshotsModalOpen, setIsScreenshotsModalOpen] = useState(false);
 
-  // Welcome Screen state: show on startup unless dismissed by user
+  // Welcome Screen state: show once per day, then auto-enter into the panel
   const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('hide_welcome_screen_v1') !== 'true';
+      const last = localStorage.getItem('welcome_last_shown_date');
+      return last !== new Date().toDateString();
     } catch {
       return true;
     }
   });
+
+  // Mark today as "welcome shown" whenever it opens (max once per day)
+  useEffect(() => {
+    if (isWelcomeOpen) {
+      try {
+        localStorage.setItem('welcome_last_shown_date', new Date().toDateString());
+      } catch {
+        /* storage unavailable */
+      }
+    }
+  }, [isWelcomeOpen]);
 
   // Auto-save to LocalStorage
   useEffect(() => {
@@ -243,6 +257,12 @@ export default function App() {
     window.print();
   };
 
+  // Today's weekday mapped to schedule keys (JS: 0=Sunday ... 6=Saturday)
+  const todayDayId = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[
+    new Date().getDay()
+  ];
+  const todaySchedule = schedule.find((d) => d.dayId === todayDayId);
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
       {/* Top Navbar */}
@@ -252,16 +272,28 @@ export default function App() {
         onPrint={handlePrint}
         onReset={handleResetSchedule}
         onLoadSample={handleLoadSample}
-        onOpenScreenshots={() => setIsScreenshotsModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen(true)}
         weekTitle={headerInfo.weekNumber}
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
+      <main className="no-print flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
+        {/* Rotating Clinic Konkur promo banner - visible on every tab */}
+        <PromoBannerStrip />
+
         {/* TAB 1: Weekly Schedule (جدول برنامه‌ریزی هفتگی) */}
         {activeTab === 'schedule' && (
-          <div>
+          <div className="animate-tab-in">
+            {/* Today at-a-glance: animated progress circles + Konkur countdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 mb-6">
+              <div className="lg:col-span-7">
+                <TodayProgressWidget todaySchedule={todaySchedule} weekSchedule={schedule} />
+              </div>
+              <div className="lg:col-span-5">
+                <KonkurCountdown />
+              </div>
+            </div>
+
             {/* Top Header: Start & End of Program + Motivational Quote */}
             <HeaderSection
               headerInfo={headerInfo}
@@ -296,7 +328,7 @@ export default function App() {
 
         {/* TAB 2: Dedicated Overview (نگاه کلی دروس اختصاصی و عمومی) */}
         {activeTab === 'overview' && (
-          <div>
+          <div className="animate-tab-in">
             <HeaderSection
               headerInfo={headerInfo}
               onChangeHeader={setHeaderInfo}
@@ -316,35 +348,54 @@ export default function App() {
 
         {/* TAB 3: Study Report Table (صفحه مدیریت گزارش کار) */}
         {activeTab === 'report' && (
+          <div className="animate-tab-in">
           <ReportCardPage
             reports={reports}
             onUpdateReport={setReports}
             onPrint={handlePrint}
           />
+          </div>
         )}
 
         {/* TAB 4: Pomodoro Focus Study Technique (تکنیک مطالعه پومودورو) */}
         {activeTab === 'pomodoro' && (
-          <PomodoroSection
-            onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
-          />
+          <div className="animate-tab-in">
+            <PomodoroSection
+              onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
+            />
+          </div>
         )}
 
         {/* TAB 5: Counseling Articles & Study Quality Tips (۱۸ مقاله مشاوره‌ای) */}
         {activeTab === 'articles' && (
-          <CounselingArticlesPage />
+          <div className="animate-tab-in">
+            <CounselingArticlesPage />
+          </div>
         )}
 
         {/* TAB 6: Test Sources Guide (بانک منابع تستی کنکور) */}
         {activeTab === 'sources' && (
-          <TestSourcesPage />
+          <div className="animate-tab-in">
+            <TestSourcesPage />
+          </div>
         )}
 
         {/* TAB 7: Majors & Top Careers Guide (معرفی رشته‌ها و شغل‌ها) */}
         {activeTab === 'majors' && (
-          <MajorsPage />
+          <div className="animate-tab-in">
+            <MajorsPage />
+          </div>
         )}
       </main>
+
+      {/* Printable full plan (hidden on screen, printed via چاپ A4) */}
+      <PrintablePlan
+        headerInfo={headerInfo}
+        schedule={schedule}
+        partTimes={partTimes}
+        overviewList={overviewList}
+        reports={reports}
+      />
 
       {/* Footer */}
       <footer className="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-400 no-print mt-auto">
@@ -361,6 +412,9 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Slim rotating promo ticker above the footer */}
+      <PromoTicker />
 
       {/* Part Edit Modal */}
       {selectedSlotData && (
@@ -388,12 +442,6 @@ export default function App() {
         onClose={() => setIsTimerModalOpen(false)}
         activeSlot={timerActiveSlot}
         onMarkSlotCompleted={handleMarkSlotCompletedFromTimer}
-      />
-
-      {/* Screenshots and ZIP Download Gallery Modal */}
-      <ScreenshotsModal
-        isOpen={isScreenshotsModalOpen}
-        onClose={() => setIsScreenshotsModalOpen(false)}
       />
 
       {/* Welcome Screen & Clinic Konkur Promo Modal */}

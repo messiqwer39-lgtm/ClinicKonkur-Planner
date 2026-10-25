@@ -1,21 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   Send,
-  Heart,
   ArrowLeft,
-  CheckCircle2,
-  Copy,
-  Check,
-  Download,
   Calendar,
   Layers,
   Award,
-  ChevronRight,
-  ChevronLeft,
   Flame,
   ShieldCheck,
-  ExternalLink,
+  TrendingUp,
+  Clock,
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
@@ -25,231 +19,248 @@ interface WelcomeScreenProps {
   onClose: () => void;
 }
 
+const AUTO_ENTER_SECONDS = 7;
+
+/** تبلیغات چرخشی کلینیک کنکور (کوتاه - فقط یک بنر در هر لحظه) */
 const PROMO_BANNERS = [
   {
     id: 1,
     tag: 'طرح ویژه رتبه‌سازی',
-    title: 'طرح مشاوره VIP و خصوصی کلینیک کنکور',
-    desc: 'برنامه‌ریزی کاملاً شخصی‌سازی شده روزانه مطابق با نقاط قوت، ضعف و تراز شما با پیگیری شبانه توسط رتبه‌های برتر کشوری.',
-    badge: 'ظرفیت محدود ۱۴۰۴ - ۱۴۰۵',
-    gradient: 'from-blue-600/40 via-indigo-600/30 to-cyan-500/20',
-    border: 'border-cyan-400',
-    highlight: 'افزایش قطعی تراز و آرامش ذهنی',
+    title: 'مشاوره VIP و خصوصی کلینیک کنکور',
+    desc: 'برنامه‌ریزی شخصی روزانه + پیگیری شبانه توسط رتبه‌های برتر کشوری',
+    gradient: 'from-cyan-500/20 via-blue-600/15 to-indigo-500/10',
+    border: 'border-cyan-400/60',
+    icon: TrendingUp,
   },
   {
     id: 2,
     tag: 'ارتقای تراز آزمون',
-    title: 'آنالیز حرفه‌ای کارنامه آزمون‌های آزمایشی',
-    desc: 'شناسایی دقیق دام‌های تستی، دلایل غلط زدن و ارائه راه‌حل‌های علمی برای عبور از سدهای ترازی در آزمون‌های قلم‌چی، سنجش و ماز.',
-    badge: 'رشد میانگین ۱۲۰۰ تراز',
-    gradient: 'from-emerald-600/40 via-teal-600/30 to-cyan-500/20',
-    border: 'border-emerald-400',
-    highlight: 'تحلیل خط به خط تست‌های اشتباه',
+    title: 'آنالیز حرفه‌ای کارنامه آزمایشی',
+    desc: 'شناسایی دام‌های تستی و راه‌حل علمی عبور از سد ترازی قلم‌چی، سنجش و ماز',
+    gradient: 'from-emerald-500/20 via-teal-600/15 to-cyan-500/10',
+    border: 'border-emerald-400/60',
+    icon: Award,
   },
   {
     id: 3,
-    tag: 'مهارت‌های طلایی کنکور',
-    title: 'کارگاه‌های تخصصی مدیریت زمان و تندخوانی',
-    desc: 'آموزش تکنیک‌های ضربدر-منها، استراتژی زمان‌های نقصانی، غلبه بر خستگی ذهنی و ایجاد تعادل طلایی بین امتحانات نهایی و تست کنکور.',
-    badge: 'متدولوژی اختصاصی کلینیک',
-    gradient: 'from-amber-600/40 via-orange-600/30 to-yellow-500/20',
-    border: 'border-amber-400',
-    highlight: 'صرفه‌جویی ۳۰ دقیقه‌ای در دفترچه',
+    tag: 'مهارت‌های طلایی',
+    title: 'کارگاه مدیریت زمان و تندخوانی',
+    desc: 'تکنیک ضربدر-منها، استراتژی زمان نقصانی و تعادل امتحان نهایی با تست',
+    gradient: 'from-amber-500/20 via-orange-600/15 to-yellow-500/10',
+    border: 'border-amber-400/60',
+    icon: Flame,
   },
 ];
 
+/**
+ * صفحه خوش‌آمدگویی کوتاه: سلام + یک تبلیغ کلینیک کنکور + ورود خودکار به پنل
+ */
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onEnter, isOpen, onClose }) => {
   const [currentBanner, setCurrentBanner] = useState(0);
-  const [copiedBooking, setCopiedBooking] = useState(false);
+  const [countdown, setCountdown] = useState(AUTO_ENTER_SECONDS);
   const { isInstallable, install } = usePWAInstall();
+  const enteredRef = useRef(false);
 
-  // Auto rotate banners smoothly every 4 seconds
+  // چرخش آرام بنر تبلیغاتی
   useEffect(() => {
+    if (!isOpen) return;
     const timer = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % PROMO_BANNERS.length);
-    }, 4000);
+    }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [isOpen]);
+
+  // ریست شمارش هنگام باز شدن
+  useEffect(() => {
+    if (isOpen) setCountdown(AUTO_ENTER_SECONDS);
+  }, [isOpen]);
+
+  // تیک شمارش معکوس ورود خودکار (هر ثانیه)
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isOpen]);
+
+  // ورود خودکار به پنل پس از رسیدن شمارش به صفر
+  useEffect(() => {
+    if (isOpen && countdown === 0 && !enteredRef.current) {
+      enteredRef.current = true;
+      onEnter();
+      onClose();
+    }
+    // onEnter/onClose عمداً خارج از وابستگی‌ها هستند تا تایمر با تغییر identity ریست نشود
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdown, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleCopyBooking = () => {
-    navigator.clipboard.writeText('@Poshtibani_CliniCk_konkur2026');
-    setCopiedBooking(true);
-    setTimeout(() => setCopiedBooking(false), 2500);
-  };
-
-  const handleEnterApp = () => {
+  const handleEnterNow = () => {
+    if (enteredRef.current) return;
+    enteredRef.current = true;
     onEnter();
     onClose();
   };
 
   const banner = PROMO_BANNERS[currentBanner];
+  const BannerIcon = banner.icon;
+  const ringRadius = 17;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringProgress = countdown / AUTO_ENTER_SECONDS;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
-      <div
-        className="bg-slate-900 border-2 border-cyan-400/50 rounded-3xl max-w-3xl w-full text-slate-100 shadow-2xl shadow-cyan-500/20 overflow-hidden flex flex-col my-auto relative ring-4 ring-cyan-500/20 transition-all"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Dynamic Glow Ambient Circles */}
-        <div className="absolute top-0 right-1/4 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto no-print">
+      <div className="welcome-pop bg-slate-900 border-2 border-cyan-400/50 rounded-3xl max-w-lg w-full text-slate-100 shadow-2xl shadow-cyan-500/20 overflow-hidden relative ring-4 ring-cyan-500/20 my-auto">
+        {/* هاله‌های نوری متحرک */}
+        <div className="absolute -top-16 -right-10 w-56 h-56 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+        <div className="absolute -bottom-16 -left-10 w-56 h-56 bg-amber-500/15 rounded-full blur-3xl pointer-events-none animate-float-slow-reverse" />
 
-        {/* Top Header Branding with Logo */}
-        <div className="p-6 pb-4 sm:p-8 sm:pb-4 text-center relative z-10 border-b border-slate-800">
-          <div className="flex flex-col items-center justify-center">
-            {/* Logo with dynamic spinning border glow */}
-            <div className="relative mb-3 group">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 bg-gradient-to-tr from-cyan-400 via-blue-500 to-amber-400 shadow-2xl shadow-cyan-500/30 flex items-center justify-center transition-transform hover:scale-105 duration-300">
-                <img
-                  src="/logo.png"
-                  alt="لوگو کلینیک کنکور"
-                  className="w-full h-full object-cover rounded-full"
+        {/* سلام و خوش‌آمدگویی */}
+        <div className="pt-7 pb-4 px-6 text-center relative z-10">
+          <div className="relative inline-block mb-3">
+            <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-amber-400 shadow-xl shadow-cyan-500/30 flex items-center justify-center animate-glow-pulse">
+              <img
+                src="/logo.png"
+                alt="لوگو کلینیک کنکور"
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+            <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full whitespace-nowrap shadow-lg">
+              Clinic Konkur
+            </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-amber-300 animate-slide-up-fade">
+            دانش‌آموز عزیز، خوش آمدی!
+          </h1>
+          <p className="text-xs sm:text-sm text-cyan-200/90 font-medium mt-2 animate-slide-up-fade animation-delay-150">
+            به پلنر تخصصی کلینیک کنکور خوش اومدی — برنامه‌ریز ۸ پارته، گزارش‌کار و مشاوره همه در یکجا
+          </p>
+        </div>
+
+        {/* بنر تبلیغاتی کلینیک کنکور (چرخشی) */}
+        <div className="px-5 relative z-10">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-[11px] text-amber-400 font-bold">
+              <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+              <span>خدمات ویژه کلینیک کنکور:</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {PROMO_BANNERS.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    currentBanner === idx ? 'w-5 bg-cyan-400' : 'w-1.5 bg-slate-700'
+                  }`}
                 />
-              </div>
-              <span className="absolute -bottom-1.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-lg">
-                Clinic Konkur
+              ))}
+            </div>
+          </div>
+
+          <div
+            key={banner.id}
+            className={`banner-slide rounded-2xl p-4 border ${banner.border} bg-gradient-to-r ${banner.gradient} relative overflow-hidden shadow-lg`}
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                <BannerIcon className="w-4 h-4 text-cyan-300" />
+              </span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-cyan-500/25 text-cyan-200 border border-cyan-400/30">
+                {banner.tag}
               </span>
             </div>
-
-            <h1 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-amber-300 tracking-tight mb-1">
-              پلنر تخصصی کلینیک کنکور
-            </h1>
-            <p className="text-xs sm:text-sm text-cyan-200/90 font-medium max-w-md mx-auto">
-              مشاوره تخصصی کنکور سراسری · برنامه‌ریزی ۸ پارت ۹۰ دقیقه‌ای · گزارش‌کار و پومودورو
-            </p>
-          </div>
-        </div>
-
-        {/* Content Body */}
-        <div className="p-6 sm:p-8 space-y-6 relative z-10 overflow-y-auto max-h-[60vh]">
-          {/* Animated Promotional Banners with dynamic indicator */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
-                <Sparkles className="w-4 h-4 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
-                <span>خدمات و طرح‌های VIP کلینیک کنکور:</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {PROMO_BANNERS.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentBanner(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      currentBanner === idx ? 'w-6 bg-cyan-400 shadow-sm shadow-cyan-400/50' : 'w-2 bg-slate-700'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div
-              className={`rounded-2xl p-5 border-2 ${banner.border} bg-gradient-to-r ${banner.gradient} backdrop-blur-xs relative overflow-hidden transition-all duration-500 shadow-lg`}
+            <h3 className="text-sm font-bold text-white mb-1">{banner.title}</h3>
+            <p className="text-[11px] text-slate-200/90 leading-relaxed">{banner.desc}</p>
+            <a
+              href="https://t.me/Poshtibani_CliniCk_konkur2026"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-black text-slate-950 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 px-3.5 py-1.5 rounded-lg transition-all hover:scale-105 shadow-md shadow-cyan-500/30"
             >
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[11px] font-black px-2.5 py-0.5 rounded-md bg-cyan-500/30 text-cyan-200 border border-cyan-400/40">
-                  {banner.tag}
-                </span>
-                <span className="text-[11px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-500/30">
-                  {banner.badge}
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white mb-1.5">{banner.title}</h3>
-              <p className="text-xs text-slate-200 leading-relaxed mb-3">{banner.desc}</p>
-              <div className="flex items-center gap-1.5 text-[11px] text-cyan-300 font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>ویژگی کلیدی: {banner.highlight}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Links & Telegram Booking Section */}
-          <div className="bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-700 shadow-md space-y-4">
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-              <Heart className="w-4 h-4 text-rose-400 fill-rose-400/30 animate-pulse" />
-              <span>پل‌های ارتباطی مستقیم و ثبت‌نام در کلینیک کنکور:</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              {/* Telegram Booking */}
-              <div className="bg-slate-900 rounded-xl p-3.5 border border-cyan-500/40 flex flex-col justify-between gap-2 shadow-inner">
-                <div>
-                  <span className="text-[11px] text-cyan-400 font-bold block mb-1">
-                    💟 جهت رزرو مشاوره مستقیم در تلگرام:
-                  </span>
-                  <span className="font-mono text-xs font-bold text-slate-100 select-all block bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-center">
-                    @Poshtibani_CliniCk_konkur2026
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
-                  <a
-                    href="https://t.me/Poshtibani_CliniCk_konkur2026"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 text-center py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 rounded-lg font-black text-[11px] transition-all shadow-sm shadow-cyan-500/30"
-                  >
-                    پیام فوری در تلگرام
-                  </a>
-                  <button
-                    onClick={handleCopyBooking}
-                    className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
-                    title="کپی آیدی پشتیبانی"
-                  >
-                    {copiedBooking ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Telegram Channel */}
-              <div className="bg-slate-900 rounded-xl p-3.5 border border-blue-500/40 flex flex-col justify-between gap-2 shadow-inner">
-                <div>
-                  <span className="text-[11px] text-blue-400 font-bold block mb-1">
-                    📢 عضویت در کانال رسمی تلگرام کلینیک:
-                  </span>
-                  <span className="font-mono text-xs font-bold text-slate-100 select-all block bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-center">
-                    t.me/CliniC_Konkur2026
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-slate-800">
-                  <a
-                    href="https://t.me/CliniC_Konkur2026"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg font-bold text-[11px] transition-all shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>عضویت در کانال کلینیک کنکور</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+              <Send className="w-3 h-3" />
+              <span>رزرو مشاوره در تلگرام: Poshtibani_CliniCk_konkur2026@</span>
+            </a>
           </div>
         </div>
 
-        {/* Footer Actions: Always Accessible, Never Hidden Permanently */}
-        <div className="p-6 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
-          {/* Direct APK Download Button on the Welcome Screen! */}
-          <a
-            href="/ClinicPlan-v1.1.0.apk"
-            download="ClinicPlan-v1.1.0.apk"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-400/50 text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 text-xs font-bold transition-all hover:scale-105 shadow-sm"
-          >
-            <Download className="w-4 h-4 text-emerald-400" />
-            <span>دانلود مستقیم فایل نصبی کلینیک پلن (APK اندروید)</span>
-          </a>
+        {/* ورود خودکار به پنل + کانال */}
+        <div className="p-5 mt-4 relative z-10">
+          <div className="bg-slate-800/70 border border-slate-700 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5 mb-0.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>ورود خودکار به پنل تا {countdown} ثانیه دیگر...</span>
+              </div>
+              <a
+                href="https://t.me/CliniC_Konkur2026"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10px] text-slate-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1 truncate"
+              >
+                <Send className="w-2.5 h-2.5" />
+                کانال تلگرام: t.me/CliniC_Konkur2026
+              </a>
+              {isInstallable && (
+                <button
+                  onClick={install}
+                  className="mt-1.5 block text-[10px] font-bold text-amber-300 hover:text-amber-200 transition-colors"
+                >
+                  نصب برنامه روی دستگاه (PWA)
+                </button>
+              )}
+            </div>
 
+            {/* حلقه شمارش معکوس ورود خودکار */}
+            <div className="relative shrink-0">
+              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r={ringRadius} fill="none" stroke="#1e293b" strokeWidth="4" />
+                <circle
+                  cx="22"
+                  cy="22"
+                  r={ringRadius}
+                  fill="none"
+                  stroke="url(#autoEnterGradient)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringCircumference * (1 - ringProgress)}
+                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                />
+                <defs>
+                  <linearGradient id="autoEnterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#22d3ee" />
+                    <stop offset="100%" stopColor="#fbbf24" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-white">
+                {countdown}
+              </span>
+            </div>
+          </div>
+
+          {/* دکمه ورود فوری */}
           <button
-            onClick={handleEnterApp}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-amber-400 hover:from-cyan-300 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-cyan-500/30 transition-all hover:scale-105"
+            onClick={handleEnterNow}
+            className="mt-3 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-amber-400 hover:from-cyan-300 hover:to-amber-300 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/30 transition-all hover:scale-[1.03] active:scale-[0.98] animate-glow-pulse"
           >
-            <span>ورود به برنامه‌ریز و شروع مطالعه</span>
+            <span>ورود به پنل برنامه‌ریزی</span>
             <ArrowLeft className="w-4 h-4" />
           </button>
+
+          <div className="mt-2.5 flex items-center justify-center gap-3 text-[9px] text-slate-500">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-2.5 h-2.5" /> ۸ پارت ۹۰ دقیقه‌ای
+            </span>
+            <span className="flex items-center gap-1">
+              <Layers className="w-2.5 h-2.5" /> گزارش‌کار تحلیلی
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" /> پومودورو کنکور
+            </span>
+          </div>
         </div>
       </div>
     </div>
