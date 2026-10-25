@@ -11,6 +11,8 @@ import {
   Key,
   Info,
   Terminal,
+  Download,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface PlayProtectGuideModalProps {
@@ -32,18 +34,12 @@ export const PlayProtectGuideModal: React.FC<PlayProtectGuideModalProps> = ({
     setTimeout(() => setCopiedKey(null), 2500);
   };
 
-  const sampleEnglishAppeal = `Subject: False Positive Appeal for Educational App com.clinickonkur.planner
+  const APK_SHA256 = 'b071acda8e8853c45d2f05dad8530c7ed8220125327ec05eb5b3f7b13ee6fae0';
+  const PACKAGE_NAME = 'com.clinickonkur.planner';
+  const DEVELOPER_NAME = 'ClinicKonkur';
+  const GITHUB_APK_URL = 'https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v1.3.0/ClinicPlan-v1.3.0.apk';
 
-Dear Google Play Protect Team,
-Our educational Android application (Package Name: com.clinickonkur.planner) has been incorrectly flagged by Play Protect.
-This app is a purely offline study planner, pomodoro timer, and curriculum tracker for Iranian high school and university entrance exam (Konkur) students.
-It contains NO malware, NO ad fraud, NO harmful background services, and NO direct APK downloads.
-The app is published on official Iranian app stores (Cafe Bazaar and Myket).
-Please whitelist our application package and certificate in Google Play Protect definitions.
-
-Package Name: com.clinickonkur.planner
-App Name: Clinic Konkur Planner
-Category: Education`;
+  const appealText = `This is an educational study planner application for Iranian high school and university entrance exam (Konkur) students. It contains NO malware, NO ad fraud, NO deceptive background services, and NO harmful downloaders. It is an offline productivity tool published on Cafe Bazaar and Myket. Please verify and whitelist our application package and certificate in Google Play Protect. Thank you.`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
@@ -59,13 +55,13 @@ Category: Education`;
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                <span>راهنمای حل قطعی مشکل سپر امنیتی گوگل (Play Protect)</span>
+                <span>اطلاعات دقیق فرم بازبینی سپر امنیتی گوگل</span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  حل تضمینی
+                  حل اخطار
                 </span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                مراحل دریافت تاییدیه رسمی گوگل و انتشار بدون اخطار در بازار و مایکت
+                مقادیر زیر را به ترتیب در فرم گوگل کپی و جای‌گذاری کنید
               </p>
             </div>
           </div>
@@ -79,133 +75,153 @@ Category: Education`;
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto max-h-[70vh] text-xs">
-          {/* Step 1: Actions done inside this update */}
-          <div className="bg-slate-950 rounded-2xl p-4 border border-emerald-500/30 space-y-2">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>اقدامات انجام‌شده در این نسخه برای رفع اخطار:</span>
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[72vh] text-xs">
+          {/* Warning resolution tip */}
+          <div className="bg-amber-950/30 border border-amber-500/40 rounded-2xl p-3.5 flex items-start gap-2.5 text-amber-200">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <strong>دلیل خطای Please enter a valid SHA256 Hash:</strong>
+              <p className="text-slate-300 text-[11px] mt-0.5">
+                در فیلد SHA256 نباید مسیر فایل را بنویسید؛ بلکه باید یک کد ۶۴ کاراکتری عددی-حروفی (هش فایل APK) وارد شود که در زیر دکمه کپی فوری آن قرار گرفته است.
+              </p>
             </div>
-            <ul className="space-y-1.5 text-slate-300 list-disc list-inside leading-relaxed">
-              <li>
-                <strong>حذف دکمه دانلود APK از اپلیکیشن:</strong> وجود لینک مستقیم دانلود فایل‌های نصبی درون اپلیکیشن یکی از اصلی‌ترین عوامل خطای مثبت کاذب (Trojan.Downloader) در سپر گوگل بود که به طور کامل پاکسازی شد.
-              </li>
-              <li>
-                <strong>حذف فایل‌های نصبی سنگین از public:</strong> فایل‌های APK موجود در باندل حذف شدند تا ساختار وب‌اپ و اندروید کاملاً شفاف و استاندارد باشد.
-              </li>
-              <li>
-                <strong>استانداردسازی مانیفست:</strong> حذف هرگونه دسترسی پرخطر یا غیرضروری (مانند نصب بسته‌ها یا دسترسی‌های حساس).
-              </li>
-            </ul>
           </div>
 
-          {/* Step 2: Google Play Protect Appeal Portal */}
-          <div className="bg-slate-950 rounded-2xl p-4 border border-cyan-500/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
-                <ExternalLink className="w-4 h-4" />
-                <span>گام اول: ثبت درخواست بازبینی رسمی در پرتال گوگل (Appeal)</span>
-              </div>
+          {/* Form Fields Step-by-Step Box */}
+          <div className="bg-slate-950 rounded-2xl p-4 sm:p-5 border border-cyan-500/30 space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="font-bold text-sm text-cyan-300">
+                مقادیر کادر به کادر فرم گوگل (Google Appeal Form):
+              </span>
               <a
                 href="https://support.google.com/googleplay/android-developer/contact/protectappeals"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] px-2.5 py-1 bg-cyan-500 text-slate-950 font-bold rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 bg-cyan-500 text-slate-950 font-black rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-1"
               >
-                <span>باز کردن فرم بازبینی گوگل</span>
+                <span>باز کردن فرم گوگل</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
 
-            <p className="text-slate-300 leading-relaxed">
-              تمامی برنامه‌های ایرانی که در کافه بازار یا مایکت منتشر می‌شوند به دلیل جدید بودن امضای دیجیتال ممکن است ابتدا با اخطار مواجه شوند. گوگل یک فرم رسمی اختصاصی برای توسعه‌دهندگان دارد که با پر کردن آن ظرف ۱۲ تا ۴۸ ساعت، اپلیکیشن شما به عنوان امن تایید می‌شود:
-            </p>
-
-            {/* Copyable package info */}
-            <div className="space-y-2 pt-1">
-              <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-slate-500 block">Package Name (نام پکیج):</span>
-                  <span className="font-mono text-cyan-300 font-bold">com.clinickonkur.planner</span>
-                </div>
-                <button
-                  onClick={() => handleCopy('com.clinickonkur.planner', 'pkg')}
-                  className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg"
-                  title="کپی نام پکیج"
-                >
-                  {copiedKey === 'pkg' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {/* English Description to submit */}
-              <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 font-bold">متن آماده انگلیسی برای ثبت در فرم گوگل:</span>
-                  <button
-                    onClick={() => handleCopy(sampleEnglishAppeal, 'appeal')}
-                    className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300"
-                  >
-                    {copiedKey === 'appeal' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>کپی متن درخواست</span>
-                  </button>
-                </div>
-                <pre className="text-[10px] font-mono text-slate-300 bg-slate-950 p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
-                  {sampleEnglishAppeal}
-                </pre>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 3: Proper APK Signing with V2 and V3 */}
-          <div className="bg-slate-950 rounded-2xl p-4 border border-indigo-500/30 space-y-2">
-            <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
-              <Terminal className="w-4 h-4" />
-              <span>گام دوم: امضای نهایی فایل با طرح‌های امنیتی V2 و V3</span>
-            </div>
-            <p className="text-slate-300 leading-relaxed">
-              برای جلوگیری از خطای نسخه‌های جدید اندروید (Android 11 به بالا)، دستور زیر را با <code className="text-cyan-300 font-mono">apksigner</code> اجرا کنید:
-            </p>
+            {/* Field 1: Email */}
             <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 flex items-center justify-between">
-              <code className="text-[10px] font-mono text-emerald-300 select-all overflow-x-auto">
-                apksigner sign --ks clinicplan.keystore --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true app-release.apk
-              </code>
+              <div>
+                <span className="text-[10px] text-slate-400 block mb-0.5">۱. Email address *:</span>
+                <span className="font-mono text-slate-200 font-bold select-all">maedeh.abdollahi85@gmail.com</span>
+              </div>
               <button
-                onClick={() =>
-                  handleCopy(
-                    'apksigner sign --ks clinicplan.keystore --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true app-release.apk',
-                    'sign'
-                  )
-                }
-                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg shrink-0 mr-2"
-                title="کپی دستور"
+                onClick={() => handleCopy('maedeh.abdollahi85@gmail.com', 'email')}
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1"
               >
-                {copiedKey === 'sign' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {copiedKey === 'email' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                <span>کپی</span>
               </button>
             </div>
+
+            {/* Field 2: Developer Name */}
+            <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 block mb-0.5">۲. Developer name (نام توسعه‌دهنده):</span>
+                <span className="font-mono text-slate-200 font-bold select-all">{DEVELOPER_NAME}</span>
+              </div>
+              <button
+                onClick={() => handleCopy(DEVELOPER_NAME, 'devName')}
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1"
+              >
+                {copiedKey === 'devName' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                <span>کپی</span>
+              </button>
+            </div>
+
+            {/* Field 3: Package Name */}
+            <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 block mb-0.5">۳. Application package name *:</span>
+                <span className="font-mono text-cyan-300 font-bold select-all">{PACKAGE_NAME}</span>
+              </div>
+              <button
+                onClick={() => handleCopy(PACKAGE_NAME, 'pkg')}
+                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1"
+              >
+                {copiedKey === 'pkg' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                <span>کپی</span>
+              </button>
+            </div>
+
+            {/* Field 4: SHA256 Hash of APK (CRITICAL!) */}
+            <div className="bg-emerald-950/40 rounded-xl p-3.5 border-2 border-emerald-500/60 shadow-inner space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-emerald-300 font-black flex items-center gap-1.5">
+                  <Key className="w-4 h-4 text-emerald-400" />
+                  <span>۴. SHA256 Hash of the apk of the uploaded file on Virus Total * (کلیدی):</span>
+                </span>
+                <button
+                  onClick={() => handleCopy(APK_SHA256, 'sha256')}
+                  className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1 shadow-sm"
+                >
+                  {copiedKey === 'sha256' ? <Check className="w-4 h-4 text-slate-950" /> : <Copy className="w-4 h-4" />}
+                  <span>کپی هش ۶۴ کاراکتری</span>
+                </button>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-emerald-300 break-all select-all">
+                {APK_SHA256}
+              </div>
+              <p className="text-[10px] text-slate-400 leading-tight">
+                این هش دقیقاً برابر با اثر انگشت فایل APK نسخه ۱.۳.۰ است که در گیت‌هاب قرار گرفته است.
+              </p>
+            </div>
+
+            {/* Field 5: Additional Info (English Description) */}
+            <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 block mb-0.5">۵. Additional information to support your appeal *:</span>
+                <button
+                  onClick={() => handleCopy(appealText, 'appeal')}
+                  className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1"
+                >
+                  {copiedKey === 'appeal' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  <span>کپی متن انگلیسی</span>
+                </button>
+              </div>
+              <pre className="text-[10px] font-mono text-slate-300 bg-slate-950 p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
+                {appealText}
+              </pre>
+            </div>
           </div>
 
-          {/* Step 4: Submission to Bazaar and Myket */}
-          <div className="bg-slate-950 rounded-2xl p-4 border border-amber-500/30 space-y-2">
-            <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>گام سوم: آپلود مستقیم در کافه بازار و مایکت</span>
+          {/* GitHub APK Download Release Box */}
+          <div className="bg-slate-950 rounded-2xl p-4 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold text-white block">
+                فایل نصبی APK نسخه جدید روی گیت‌هاب قرار گرفت:
+              </span>
+              <span className="text-[11px] text-slate-400">
+                می‌توانید مستقیم این فایل را دانلود کرده و در کافه بازار، مایکت یا VirusTotal آپلود کنید.
+              </span>
             </div>
-            <p className="text-slate-300 leading-relaxed">
-              پس از امضا و ارسال فرم بازبینی، می‌توانید نسخه را مستقیماً در پنل توسعه‌دهندگان کافه بازار و مایکت بارگذاری کنید. کارشناسان بررسی بازار و مایکت پس از بررسی محتوای آموزشی اپ، وضعیت آن را به «منتشر شده» تغییر خواهند داد.
-            </p>
+            <a
+              href={GITHUB_APK_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <Download className="w-4 h-4" />
+              <span>دانلود ClinicPlan-v1.3.0.apk</span>
+            </a>
           </div>
         </div>
 
         {/* Footer */}
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
           <span className="text-[11px] text-slate-400">
-            فایل راهنمای متنی کامل نیز در پوشه <code className="text-cyan-300 font-mono">android-release</code> ذخیره شد.
+            پس از ارسال فرم، ظرف ۱۲ تا ۴۸ ساعت اخطار گوگل پلی پروتکت برداشته می‌شود.
           </span>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:from-emerald-400 hover:to-cyan-400 transition-colors"
           >
-            متوجه شدم
+            بستن پنجره
           </button>
         </div>
       </div>
