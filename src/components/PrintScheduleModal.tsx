@@ -227,11 +227,22 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
       const blob = new Blob([byteArray], { type: 'image/png' });
       const blobUrl = URL.createObjectURL(blob);
 
-      // Try Web Share API (Android native share to Gallery / Files)
+      // Try Copying to Clipboard if supported (useful for mobile & desktop)
+      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+        } catch {
+          // ignore if clipboard permission denied
+        }
+      }
+
+      // Try Web Share API (Android native share to Gallery / Files / WhatsApp)
       let shared = false;
       if (typeof navigator !== 'undefined' && navigator.canShare && typeof File !== 'undefined') {
         try {
-          const fileName = `برنامه_هفتگی_${headerInfo.startDate || 'هفته'}.png`;
+          const fileName = `ClinicKonkur_Plan_${headerInfo.startDate || 'week'}.png`;
           const file = new File([blob], fileName, { type: 'image/png' });
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
@@ -241,7 +252,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
             });
             shared = true;
           }
-        } catch (e) {
+        } catch {
           // user cancelled or share failed, fallback to anchor click
         }
       }
@@ -250,19 +261,52 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
         // Direct anchor download
         const downloadLink = document.createElement('a');
         downloadLink.href = blobUrl;
-        downloadLink.download = `برنامه_هفتگی_کلینیک_کنکور_${headerInfo.startDate || 'هفته'}.png`;
+        downloadLink.download = `ClinicKonkur_Weekly_Plan_${headerInfo.startDate || 'week'}.png`;
         document.body.appendChild(downloadLink);
         downloadLink.click();
-        document.body.removeChild(downloadLink);
+        setTimeout(() => {
+          try {
+            document.body.removeChild(downloadLink);
+          } catch {
+            // ignore
+          }
+        }, 1000);
       }
 
       setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 5000);
+      setTimeout(() => setDownloadSuccess(false), 8000);
     } catch (err) {
       console.error('Offline download failed, falling back to print', err);
       window.print();
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // Text summary export for offline backup
+  const handleCopyScheduleText = () => {
+    let text = `📋 برنامه مطالعاتی کلینیک کنکور\n`;
+    text += `عنوان: ${headerInfo.weekNumber || 'برنامه هفتگی'}\n`;
+    text += `بازه زمانی: ${headerInfo.startDate || '---'} تا ${headerInfo.endDate || '---'}\n`;
+    text += `جمله انگیزشی: ${headerInfo.motivationalQuote}\n\n`;
+
+    schedule.forEach((day) => {
+      text += `📅 ${day.dayName} (${day.dateStr || ''}):\n`;
+      day.parts.forEach((p) => {
+        if (p.subject) {
+          const cfg = SUBJECT_CONFIGS[p.subject as keyof typeof SUBJECT_CONFIGS];
+          text += `  • پارت ${p.partNumber} (${p.timeRange}): ${cfg?.title || p.subject} - ${p.topic || 'مطالعه'} | هدف: ${p.targetTests || 0} تست [${p.status === 'completed' ? 'انجام شد ✓' : 'برنامه‌ریزی'}]\n`;
+        }
+      });
+      text += `\n`;
+    });
+
+    text += `پشتیبانی تلگرام: Poshtibani_CliniCk_konkur2026@`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 5000);
     }
   };
 
@@ -318,10 +362,20 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
             {/* PRINT / SAVE AS PDF BUTTON */}
             <button
               onClick={handlePrint}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all hover:scale-105 cursor-pointer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all hover:scale-105 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>چاپ مستقیم یا ذخیره PDF</span>
+              <span>چاپ مستقیم یا PDF</span>
+            </button>
+
+            {/* COPY TEXT BACKUP BUTTON */}
+            <button
+              onClick={handleCopyScheduleText}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold border border-slate-300 transition-colors"
+              title="کپی متن کامل برنامه برای یادداشت یا ارسال در پیام‌رسان‌ها بدون نیاز به اینترنت"
+            >
+              <FileText className="w-4 h-4 text-slate-600" />
+              <span>کپی متن برنامه</span>
             </button>
 
             <button

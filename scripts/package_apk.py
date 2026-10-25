@@ -61,8 +61,8 @@ with zipfile.ZipFile(BASE_APK, "r") as zin:
             zout.writestr(new_item, content)
 
         print("[2/5] Adding latest web dist assets into APK assets/...")
-        EXCLUDE_EXTS = {".zip", ".map"}
-        EXCLUDE_NAMES = {"Google-Play-Protect-Appeal-Kit.zip", "konkur_planner_screenshots.zip"}
+        EXCLUDE_EXTS = {".zip", ".map", ".apk", ".idsig"}
+        EXCLUDE_NAMES = {"Google-Play-Protect-Appeal-Kit.zip", "konkur_planner_screenshots.zip", "ClinicPlan-v1.3.0-Release.zip"}
         
         for root_dir, dirs, files in os.walk(DIST):
             for file in files:

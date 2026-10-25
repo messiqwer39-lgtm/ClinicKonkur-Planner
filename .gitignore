@@ -8,7 +8,11 @@ coverage/
 !.env.example
 *.zip
 !public/Google-Play-Protect-Appeal-Kit.zip
+!public/ClinicPlan-v1.3.0-Release.zip
+!ClinicPlan-v1.3.0-Release.zip
 *.apk
 !android-release/*.apk
+!ClinicPlan-v1.3.0.apk
+!public/ClinicPlan-v1.3.0.apk
 dev-dist/
 
