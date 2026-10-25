@@ -16,7 +16,9 @@ import {
   Download,
   Image,
   CheckCircle2,
+  Share2,
   FileText,
+  AlertCircle,
 } from 'lucide-react';
 
 interface PrintScheduleModalProps {
@@ -36,6 +38,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 }) => {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -44,13 +47,13 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
   };
 
   // Pure Client-Side Offline Canvas Image Generator
-  const handleDownloadOfflineImage = () => {
+  const handleDownloadOfflineImage = async () => {
     setIsExporting(true);
 
     try {
       const canvas = document.createElement('canvas');
       const width = 1400;
-      const height = 950;
+      const height = 960;
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
@@ -67,11 +70,11 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 
       // Header Banner
       ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, 0, width, 100);
+      ctx.fillRect(0, 0, width, 105);
 
       // Accent gradient line
       ctx.fillStyle = '#06b6d4';
-      ctx.fillRect(0, 96, width, 4);
+      ctx.fillRect(0, 101, width, 4);
 
       // Header Text (RTL simulation)
       ctx.direction = 'rtl';
@@ -85,7 +88,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
       ctx.fillText(
         `عنوان: ${headerInfo.weekNumber || 'برنامه هفتگی'}  |  بازه زمانی: ${toPersianDigits(headerInfo.startDate || '---')} تا ${toPersianDigits(headerInfo.endDate || '---')}`,
         width - 40,
-        82
+        84
       );
 
       ctx.direction = 'ltr';
@@ -96,7 +99,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 
       // Table Geometry
       const startX = 40;
-      const startY = 125;
+      const startY = 130;
       const tableWidth = width - 80;
       const dayColWidth = 140;
       const partColWidth = (tableWidth - dayColWidth) / 8;
@@ -210,17 +213,51 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
         footerY + 65
       );
 
-      // Trigger Instant Offline Download
+      // Convert to DataURL and Blob
       const dataUrl = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataUrl;
-      downloadLink.download = `برنامه_هفتگی_کلینیک_کنکور_${headerInfo.startDate || 'هفته'}.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      setPreviewImage(dataUrl);
+
+      // Binary Blob creation for Android
+      const byteCharacters = atob(dataUrl.split(',')[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Try Web Share API (Android native share to Gallery / Files)
+      let shared = false;
+      if (typeof navigator !== 'undefined' && navigator.canShare && typeof File !== 'undefined') {
+        try {
+          const fileName = `برنامه_هفتگی_${headerInfo.startDate || 'هفته'}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'برنامه هفتگی کلینیک کنکور',
+              text: 'جدول کامل برنامه‌ریزی ۸ پارت ۹۰ دقیقه‌ای',
+            });
+            shared = true;
+          }
+        } catch (e) {
+          // user cancelled or share failed, fallback to anchor click
+        }
+      }
+
+      if (!shared) {
+        // Direct anchor download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = blobUrl;
+        downloadLink.download = `برنامه_هفتگی_کلینیک_کنکور_${headerInfo.startDate || 'هفته'}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }
 
       setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 4000);
+      setTimeout(() => setDownloadSuccess(false), 5000);
     } catch (err) {
       console.error('Offline download failed, falling back to print', err);
       window.print();
@@ -258,7 +295,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-black text-slate-900">
-                چاپ و ذخیره آفلاین برنامه هفتگی
+                چاپ و ذخیره آفلاین برنامه هفتگی در گالری
               </h3>
               <p className="text-xs text-slate-500">
                 بدون نیاز به اینترنت، برنامه را در گالری گوشی ذخیره کنید یا به صورت PDF چاپ نمایید.
@@ -272,7 +309,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
               onClick={handleDownloadOfflineImage}
               disabled={isExporting}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all hover:scale-105 cursor-pointer"
-              title="ذخیره تصویر کامل برنامه در گالری گوشی"
+              title="تولید و ذخیره تصویر کامل برنامه در گالری گوشی"
             >
               <Image className="w-4 h-4" />
               <span>{isExporting ? 'در حال ایجاد عکس...' : 'ذخیره عکس در گالری (PNG آفلاین)'}</span>
@@ -298,9 +335,47 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 
         {/* Offline Download Success Notification */}
         {downloadSuccess && (
-          <div className="mb-4 bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-2xl flex items-center gap-2 text-xs font-bold no-print animate-in fade-in duration-300">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>تصویر برنامه هفتگی با موفقیت در پوشه دانلودها و گالری دستگاه شما ذخیره شد!</span>
+          <div className="mb-4 bg-emerald-50 border border-emerald-300 text-emerald-800 p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold no-print animate-in fade-in duration-300">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>تصویر برنامه با موفقیت تولید شد و عملیات ذخیره در گالری/دانلودها انجام گرفت!</span>
+            </div>
+            {previewImage && (
+              <span className="text-[11px] text-emerald-700">پیش‌نمایش تصویر در پایین قابل مشاهده است.</span>
+            )}
+          </div>
+        )}
+
+        {/* Generated Image Preview Card (Allows manual long-press / save on Android WebView) */}
+        {previewImage && (
+          <div className="mb-5 p-4 bg-slate-900 text-white rounded-2xl border-2 border-cyan-400 no-print space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs sm:text-sm">
+                <Image className="w-4 h-4 text-cyan-400" />
+                <span>تصویر آماده ذخیره برنامه هفتگی شما (با کیفیت بالا):</span>
+              </div>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="text-slate-400 hover:text-white text-xs"
+              >
+                بستن پیش‌نمایش
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl p-2 max-h-72 overflow-y-auto flex justify-center">
+              <img
+                src={previewImage}
+                alt="برنامه هفتگی کلینیک کنکور"
+                className="w-full h-auto object-contain rounded-lg shadow-md"
+              />
+            </div>
+
+            <div className="bg-cyan-950/60 border border-cyan-500/30 p-2.5 rounded-xl text-[11px] text-cyan-200 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                <strong>راهنمای ذخیره در گوشی:</strong> علاوه بر دانلود خودکار، می‌توانید <strong>انگشت خود را روی عکس بالا چند ثانیه نگه دارید</strong> و از منوی باز شده گزینه <strong>«بارگیری تصویر (Download Image)»</strong> یا <strong>«ذخیره تصویر»</strong> را لمس کنید تا مستقیماً به آلبوم عکس‌ها و گالری اضافه شود.
+              </p>
+            </div>
           </div>
         )}
 

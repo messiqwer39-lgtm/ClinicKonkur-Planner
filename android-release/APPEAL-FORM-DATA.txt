@@ -21,7 +21,7 @@ com.clinickonkur.planner
 ------------------------------------------------------------------------
 کادر ۴: SHA256 Hash of the apk of the uploaded file on Virus Total *
 (هش ۶۴ کاراکتری زیر را دقیقاً در این کادر کپی کنید - بدون هیچ فاصله یا خط تیره):
-b071acda8e8853c45d2f05dad8530c7ed8220125327ec05eb5b3f7b13ee6fae0
+fdd4187a0ba8e72fc80e7de5589044eedaac962db32a0b21a3745be385e29cdd
 
 ------------------------------------------------------------------------
 کادر ۵: Additional information to support your appeal *
