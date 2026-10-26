@@ -20,6 +20,7 @@ import { PrintScheduleModal } from './components/PrintScheduleModal';
 import { RotateScreenPrompt } from './components/RotateScreenPrompt';
 import { AppUserGuideModal } from './components/AppUserGuideModal';
 import { CelebrationModal } from './components/CelebrationModal';
+import { DownloadApkModal } from './components/DownloadApkModal';
 import { notificationService } from './utils/notificationService';
 
 import {
@@ -73,6 +74,7 @@ export default function App() {
   const [isScreenshotsModalOpen, setIsScreenshotsModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isDownloadApkOpen, setIsDownloadApkOpen] = useState(false);
 
   // Daily 100% completion celebration state
   const [celebrationData, setCelebrationData] = useState<{
@@ -287,6 +289,7 @@ export default function App() {
         onOpenScreenshots={() => setIsScreenshotsModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
+        onOpenDownloadApk={() => setIsDownloadApkOpen(true)}
         weekTitle={headerInfo.weekNumber}
       />
 
@@ -560,6 +563,12 @@ export default function App() {
       <AppUserGuideModal
         isOpen={isGuideOpen}
         onClose={() => setIsGuideOpen(false)}
+      />
+
+      {/* Download APK and Mobile Troubleshooting Modal */}
+      <DownloadApkModal
+        isOpen={isDownloadApkOpen}
+        onClose={() => setIsDownloadApkOpen(false)}
       />
 
       {/* Screenshots and ZIP Download Gallery Modal */}

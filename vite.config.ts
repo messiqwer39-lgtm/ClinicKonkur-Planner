@@ -85,6 +85,23 @@ export default defineConfig(() => {
           type: 'module',
         },
       }),
+      {
+        name: 'apk-mime-headers',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url && req.url.includes('.apk')) {
+              const fname = req.url.split('/').pop()?.split('?')[0] || 'ClinicPlan.apk';
+              res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+              res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+            } else if (req.url && req.url.includes('.zip')) {
+              const fname = req.url.split('/').pop()?.split('?')[0] || 'Release.zip';
+              res.setHeader('Content-Type', 'application/zip');
+              res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+            }
+            next();
+          });
+        },
+      },
     ],
     resolve: {
       alias: {

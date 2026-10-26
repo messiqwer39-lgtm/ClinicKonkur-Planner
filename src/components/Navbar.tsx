@@ -14,6 +14,7 @@ import {
   WifiOff,
   BookMarked,
   HelpCircle,
+  Smartphone,
 } from 'lucide-react';
 import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
 
@@ -28,6 +29,7 @@ interface NavbarProps {
   onOpenScreenshots: () => void;
   onOpenWelcome: () => void;
   onOpenGuide: () => void;
+  onOpenDownloadApk?: () => void;
   weekTitle: string;
 }
 
@@ -40,6 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenScreenshots,
   onOpenWelcome,
   onOpenGuide,
+  onOpenDownloadApk,
   weekTitle,
 }) => {
   const { isInstallable, install, isIOS } = usePWAInstall();
@@ -83,6 +86,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Action Mobile Icons */}
           <div className="flex items-center gap-1 xl:hidden">
+            {onOpenDownloadApk && (
+              <button
+                onClick={onOpenDownloadApk}
+                className="p-2 text-emerald-300 hover:text-white rounded-lg bg-emerald-950/70 border border-emerald-700/60"
+                title="دانلود فایل نصبی APK اندروید"
+              >
+                <Smartphone className="w-4 h-4 text-emerald-400" />
+              </button>
+            )}
             <button
               onClick={onOpenGuide}
               className="p-2 text-cyan-300 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
@@ -224,6 +236,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 border border-slate-700 hover:bg-slate-800 rounded-xl whitespace-nowrap"
             >
               <span>نصب در iOS</span>
+            </button>
+          )}
+
+          {onOpenDownloadApk && (
+            <button
+              onClick={onOpenDownloadApk}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl transition-colors whitespace-nowrap shadow-xs"
+              title="دانلود فایل نصبی APK اندروید v1.4.0"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+              <span>دانلود APK</span>
             </button>
           )}
 
