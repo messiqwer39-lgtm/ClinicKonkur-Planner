@@ -360,16 +360,16 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
       const report = reports.find((r) => r.dayId === dInfo.id);
 
       const descH = report?.descriptiveHours || 0;
-      const testH = report?.testHours || 0;
-      const totH = descH + testH;
-      const corr = report?.correctTests || 0;
-      const wrg = report?.wrongTests || 0;
-      const unans = report?.unansweredTests || 0;
-      const totT = corr + wrg + unans;
+      const testH = report?.testingHours || 0;
+      const totH = report?.totalHours || (descH + testH);
+      const corr = report?.testsCorrect || 0;
+      const wrg = report?.testsWrong || 0;
+      const unans = report?.testsUnanswered || 0;
+      const totT = report?.totalTests || (corr + wrg + unans);
 
       // Real Konkur percent: (3 * Correct - Wrong) / (3 * Total) * 100
-      let percent = 0;
-      if (totT > 0) {
+      let percent = report?.accuracyPercentage || 0;
+      if (totT > 0 && !percent) {
         percent = Math.max(0, Math.round(((corr * 3 - wrg) / (totT * 3)) * 100));
       }
 
@@ -433,13 +433,12 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
         } else if (col.id === 'quality') {
           ctx.font = '11px Vazirmatn, Tahoma, sans-serif';
           ctx.fillStyle = '#334155';
-          const qualityStr = report?.satisfaction === 'great'
+          const rating = report?.qualityRating || 3;
+          const qualityStr = rating >= 4
             ? '⭐ عالی و پرانرژی'
-            : report?.satisfaction === 'good'
+            : rating === 3
             ? '✓ خوب و هدفمند'
-            : report?.satisfaction === 'medium'
-            ? 'متوسط (نیاز به تمرکز)'
-            : 'عادی';
+            : 'متوسط (نیاز به تمرکز)';
           ctx.fillText(qualityStr, colX + col.width / 2, rowY + 38);
         }
       });
