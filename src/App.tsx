@@ -19,6 +19,8 @@ import { ClinicBanner } from './components/ClinicBanner';
 import { PrintScheduleModal } from './components/PrintScheduleModal';
 import { RotateScreenPrompt } from './components/RotateScreenPrompt';
 import { AppUserGuideModal } from './components/AppUserGuideModal';
+import { CelebrationModal } from './components/CelebrationModal';
+import { notificationService } from './utils/notificationService';
 
 import {
   DaySchedule,
@@ -71,6 +73,19 @@ export default function App() {
   const [isScreenshotsModalOpen, setIsScreenshotsModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  // Daily 100% completion celebration state
+  const [celebrationData, setCelebrationData] = useState<{
+    isOpen: boolean;
+    dayName: string;
+    completedParts: number;
+    totalPlannedTests: number;
+  }>({
+    isOpen: false,
+    dayName: '',
+    completedParts: 0,
+    totalPlannedTests: 0,
+  });
 
   // Welcome Screen state: show on startup unless dismissed by user
   const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(() => {
@@ -129,12 +144,33 @@ export default function App() {
     setSelectedSlotData({ dayName, slot });
   };
 
+  const checkDayCompletion = (updatedSchedule: DaySchedule[], targetDayId?: string) => {
+    for (const day of updatedSchedule) {
+      if (!targetDayId || day.dayId === targetDayId) {
+        const filled = day.parts.filter((p) => Boolean(p.subject));
+        const completed = filled.filter((p) => p.status === 'completed');
+        if (filled.length > 0 && completed.length === filled.length) {
+          const totalPlannedTests = filled.reduce((acc, curr) => acc + (curr.targetTests || 0), 0);
+          setCelebrationData({
+            isOpen: true,
+            dayName: day.dayName,
+            completedParts: completed.length,
+            totalPlannedTests,
+          });
+          notificationService.notifyDailyCompleted(completed.length, totalPlannedTests);
+          break;
+        }
+      }
+    }
+  };
+
   const handleSavePartSlot = (updatedSlot: PartSlot) => {
     const updatedSchedule = schedule.map((day) => {
       const nextParts = day.parts.map((p) => (p.id === updatedSlot.id ? updatedSlot : p));
       return { ...day, parts: nextParts };
     });
     setSchedule(updatedSchedule);
+    checkDayCompletion(updatedSchedule);
   };
 
   const handleQuickToggleStatus = (dayId: string, partId: string) => {
@@ -160,6 +196,7 @@ export default function App() {
       return day;
     });
     setSchedule(updated);
+    checkDayCompletion(updated, dayId);
   };
 
   const handleSavePartTimes = (newTimes: string[]) => {
@@ -212,6 +249,7 @@ export default function App() {
       return { ...day, parts: nextParts };
     });
     setSchedule(updated);
+    checkDayCompletion(updated);
     playChime('success');
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
   };
@@ -506,6 +544,16 @@ export default function App() {
         schedule={schedule}
         headerInfo={headerInfo}
         partTimes={partTimes}
+        reports={reports}
+      />
+
+      {/* Daily 100% Completion Celebration Modal */}
+      <CelebrationModal
+        isOpen={celebrationData.isOpen}
+        onClose={() => setCelebrationData((prev) => ({ ...prev, isOpen: false }))}
+        dayName={celebrationData.dayName}
+        completedParts={celebrationData.completedParts}
+        totalPlannedTests={celebrationData.totalPlannedTests}
       />
 
       {/* App User Guide Modal */}

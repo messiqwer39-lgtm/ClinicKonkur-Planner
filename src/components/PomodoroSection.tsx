@@ -13,9 +13,12 @@ import {
   Layers,
   Coffee,
   BookOpen,
+  CloudRain,
 } from 'lucide-react';
-import { toPersianDigits, playChime } from '../utils/helpers';
+import { toPersianDigits } from '../utils/helpers';
 import confetti from 'canvas-confetti';
+import { audioService } from '../utils/audioService';
+import { notificationService } from '../utils/notificationService';
 
 interface PomodoroSectionProps {
   onAddStudyTimeToReport?: (minutes: number, isTesting: boolean) => void;
@@ -73,87 +76,48 @@ export const PomodoroSection: React.FC<PomodoroSectionProps> = ({ onAddStudyTime
     phase === 'study' ? currentMode.studyMinutes * 60 : currentMode.breakMinutes * 60;
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
 
-  // Web Audio Rain / White Noise synthesizer for offline ambient sound
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const noiseNodeRef = useRef<AudioNode | null>(null);
+  const [rainVolume, setRainVolume] = useState(0.45);
 
-  const startAmbientSound = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      audioCtxRef.current = ctx;
-
-      const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      let lastOut = 0.0;
-
-      // Pink noise filter algorithm for soothing rainfall
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        output[i] = (lastOut + 0.02 * white) / 1.02;
-        lastOut = output[i];
-        output[i] *= 3.5;
-      }
-
-      const whiteNoise = ctx.createBufferSource();
-      whiteNoise.buffer = noiseBuffer;
-      whiteNoise.loop = true;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(800, ctx.currentTime);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-
-      whiteNoise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      whiteNoise.start(0);
-      noiseNodeRef.current = whiteNoise;
-    } catch {
-      // audio disabled or blocked
-    }
-  };
-
-  const stopAmbientSound = () => {
-    try {
-      if (noiseNodeRef.current) {
-        (noiseNodeRef.current as AudioScheduledSourceNode).stop();
-        noiseNodeRef.current = null;
-      }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-        audioCtxRef.current = null;
-      }
-    } catch {
-      // ignore
-    }
-  };
-
-  const toggleAmbientSound = () => {
+  const toggleAmbientSound = async () => {
     if (isAmbientSoundOn) {
-      stopAmbientSound();
+      audioService.stopRain();
       setIsAmbientSoundOn(false);
     } else {
-      startAmbientSound();
-      setIsAmbientSoundOn(true);
+      const ok = await audioService.startRain(rainVolume);
+      setIsAmbientSoundOn(ok);
     }
   };
 
-  // Timer interval
+  const handleRainVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setRainVolume(val);
+    audioService.setRainVolume(val);
+  };
+
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     if (isRunning && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) => {
+          const next = prev - 1;
+          if (next % 60 === 0) {
+            const mins = Math.ceil(next / 60);
+            notificationService.showActiveStudy(
+              currentMode.name,
+              phase === 'study' ? 'تمرکز کنکوری پومودورو' : 'استراحت طلایی',
+              mins
+            );
+          }
+          return next;
+        });
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
-      playChime('success');
+      if (phase === 'study') {
+        notificationService.notifyStudyFinished(currentMode.name);
+      } else {
+        audioService.playTimerAlarm();
+      }
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
 
       if (phase === 'study') {
@@ -362,19 +326,33 @@ export const PomodoroSection: React.FC<PomodoroSectionProps> = ({ onAddStudyTime
           </button>
 
           {/* Offline Ambient White Noise Generator */}
-          <button
-            type="button"
-            onClick={toggleAmbientSound}
-            className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold rounded-2xl transition-colors ${
-              isAmbientSoundOn
-                ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-            title="صدای نویز سفید باران آرامش‌بخش برای تمرکز حواس"
-          >
-            {isAmbientSoundOn ? <Volume2 className="w-4 h-4 text-cyan-600" /> : <VolumeX className="w-4 h-4" />}
-            <span>{isAmbientSoundOn ? 'صدای باران (روشن)' : 'صدای باران تمرکز'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleAmbientSound}
+              className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold rounded-2xl transition-colors ${
+                isAmbientSoundOn
+                  ? 'bg-cyan-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+              title="صدای نویز سفید باران آرامش‌بخش برای تمرکز حواس"
+            >
+              <CloudRain className="w-4 h-4" />
+              <span>{isAmbientSoundOn ? 'صدای باران (روشن)' : 'صدای باران تمرکز'}</span>
+            </button>
+            {isAmbientSoundOn && (
+              <input
+                type="range"
+                min="0.1"
+                max="1.0"
+                step="0.05"
+                value={rainVolume}
+                onChange={handleRainVolumeChange}
+                className="w-20 h-1.5 accent-cyan-600 bg-slate-200 rounded-lg cursor-pointer"
+                title="بلندی صدای باران"
+              />
+            )}
+          </div>
         </div>
 
         {/* Sessions Counter Footer */}
