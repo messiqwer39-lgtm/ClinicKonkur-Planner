@@ -61,47 +61,46 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-right">
           {/* Main Download Action Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Direct Local Download */}
+            {/* Direct Local Download - Guaranteed Fresh Install */}
             <a
-              href="/ClinicPlan-Final.apk"
-              download="ClinicPlan-v1.4.0-Final.apk"
+              href="/ClinicPlan-DirectInstall.apk"
+              download="ClinicPlan-DirectInstall.apk"
               className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold flex flex-col justify-between shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs px-2 py-0.5 rounded bg-white/20 text-white font-bold">
-                  نسخه نهایی و تضمین‌شده
+                  پیشنهاد ویژه • نصب ۱۰۰٪ تضمینی
                 </span>
                 <Download className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود مستقیم فایل APK (تضمین نصب)
+                  دانلود مستقیم (بدون ارور App Not Installed)
                 </span>
                 <span className="text-xs text-emerald-100 font-mono mt-0.5 block">
-                  حجم دقیق: {APK_SIZE} • سازگار با همه گوشی‌ها
+                  حجم ۵.۷ مگابایت • بسته مستقل بدون تداخل
                 </span>
               </div>
             </a>
 
-            {/* GitHub Official Release */}
+            {/* Official Myket Package */}
             <a
-              href={GITHUB_RELEASE_APK}
-              target="_blank"
-              rel="noreferrer"
+              href="/ClinicPlan-v1.4.0.apk"
+              download="ClinicPlan-v1.4.0.apk"
               className="p-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex flex-col justify-between shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-bold">
-                  GitHub Release v1.4.0
+                  نسخه رسمی مایکت (کد ۱۰۰)
                 </span>
                 <ExternalLink className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود از سرور گیت‌هاب (CDN رسمی)
+                  دانلود نسخه رسمی مایکت (v1.4.0)
                 </span>
                 <span className="text-xs text-slate-400 mt-0.5 block">
-                  دانلود مستقیم و پرسرعت سرورهای ابری
+                  بسته com.clinickonkur.planner برای بازار و مایکت
                 </span>
               </div>
             </a>
@@ -115,31 +114,32 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
               </div>
               <div>
                 <span className="text-xs font-bold text-slate-900 block">
-                  دانلود بسته زیپ کامل (فایل APK + راهنمای جامع انتشار مایکت)
+                  دانلود بسته زیپ کامل (شامل هر دو فایل APK بومی + راهنمای مایکت)
                 </span>
                 <span className="text-[11px] text-slate-500">
-                  فرمت .zip مناسب کامپیوتر یا مدیریت فایل
+                  لینک مستقیم GitHub CDN با حداکثر سرعت
                 </span>
               </div>
             </div>
             <a
-              href="/ClinicPlan-v1.4.0-Release.zip"
-              download="ClinicPlan-v1.4.0-Release.zip"
+              href="https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v1.4.0/ClinicPlan-v1.4.0-Release.zip"
+              target="_blank"
+              rel="noreferrer"
               className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs whitespace-nowrap shadow-xs"
             >
               دانلود ZIP
             </a>
           </div>
 
-          {/* Guide for Parse Error Resolution */}
+          {/* Guide for App Not Installed Resolution */}
           <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 text-amber-950 space-y-3">
             <div className="flex items-center gap-2 text-amber-800 font-black text-sm">
               <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-              <span>راهنمای رفع قطعی خطای «مشکلی در تجزیه بسته وجود دارد» (Parse Error)</span>
+              <span>چرا ارور «App not installed» رخ می‌دهد و راه‌حل قطعی چیست؟</span>
             </div>
 
             <p className="text-xs text-amber-900/90 leading-relaxed">
-              این خطا در گوشی‌های سامسونگ معمولاً به یکی از ۴ دلیل ساده زیر رخ می‌دهد که به‌راحتی برطرف می‌شود:
+              ارور <strong>App not installed (برنامه نصب نشد)</strong> دقیقاً زمانی رخ می‌دهد که اندروید تشخیص دهد نسخه‌ای از این برنامه با کلید امضای متفاوت قبلاً روی گوشی نصب شده یا داده‌های آن هنوز در حافظه کش گوشی باقی مانده است. برای حل آن:
             </p>
 
             <div className="space-y-2.5 text-xs">
