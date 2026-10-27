@@ -485,7 +485,7 @@ export default function App() {
               🖨️ چاپ و ذخیره تصویر برنامه (A4)
             </button>
             <a
-              href="/Google-Play-Protect-Appeal-Kit.zip"
+              href="./Google-Play-Protect-Appeal-Kit.zip"
               download="Google-Play-Protect-Appeal-Kit.zip"
               className="text-emerald-400 hover:underline font-bold"
               title="دانلود بسته ZIP مدارک بازبینی سپر گوگل و انتشار در بازار و مایکت"

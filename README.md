@@ -2,6 +2,15 @@
 
 اپلیکیشن برنامه‌ریزی کنکور با سیستم ۸ پارت روزانه، گزارش‌کار تحلیلی، شمارش معکوس کنکور ۱۴۰۶، برنامه چاپی کامل هر سه رشته و مشاوره کلینیک کنکور.
 
+## نصب نسخه وب روی هاست cPanel
+
+نسخه وب (PWA) کامل برنامه به‌صورت ZIP آماده منتشر شده است: [ClinicPlan-Web-v2.1.0.zip](https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v2.1.0-web/ClinicPlan-Web-v2.1.0.zip)
+
+1. فایل ZIP را در cPanel آپلود و داخل `public_html` (یا هر زیرپوشه) Extract کنید.
+2. نیازی به PHP، دیتابیس یا Node.js نیست — سایت کاملاً استاتیک است.
+3. برای نصب روی گوشی و کارکرد آفلاین، HTTPS را فعال کنید (AutoSSL در cPanel).
+4. راهنمای کامل فارسی داخل بسته: `INSTALL-cPanel.txt`
+
 ## نصب نسخه اندروید (APK)
 
 آخرین نسخه امضاشده را از صفحه [Releases](https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/latest) دانلود کنید.

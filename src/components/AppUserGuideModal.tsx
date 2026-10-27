@@ -104,7 +104,7 @@ export const AppUserGuideModal: React.FC<AppUserGuideModalProps> = ({
           </p>
           <div className="pt-2">
             <a
-              href="/Google-Play-Protect-Appeal-Kit.zip"
+              href="./Google-Play-Protect-Appeal-Kit.zip"
               download="Google-Play-Protect-Appeal-Kit.zip"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-black text-xs rounded-xl shadow-md hover:scale-105 transition-all"
             >
