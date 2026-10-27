@@ -1,0 +1,54 @@
+# ============================================
+# Clinic Plan (کلینیک پلن) — Web / PWA
+# cPanel / Apache configuration
+# ============================================
+
+Options -Indexes
+AddDefaultCharset UTF-8
+
+# --- Correct MIME types ---
+AddType application/manifest+json .webmanifest
+AddType application/vnd.android.package-archive .apk
+AddType application/zip .zip
+AddType image/webp .webp
+
+# --- Compression (smaller & faster) ---
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --- Browser caching ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType application/zip "access plus 1 week"
+  ExpiresByType application/vnd.android.package-archive "access plus 1 week"
+  # These must always be fresh:
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/manifest+json "access plus 0 seconds"
+</IfModule>
+
+# --- Service worker must never be cached by proxy/browser ---
+<FilesMatch "^(sw\.js|registerSW\.js)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Service-Worker-Allowed "/"
+  </IfModule>
+</FilesMatch>
+
+# --- Single Page App fallback ---
+# (any unknown URL without a file extension serves the app)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.(apk|zip|png|jpg|jpeg|gif|svg|ico|css|js|webmanifest|json|woff|woff2|ttf)$
+  RewriteRule . index.html [L]
+</IfModule>
