@@ -4,10 +4,10 @@ import re
 import shutil
 from pathlib import Path
 
-ROOT = Path("/home/z/my-project/work/ClinicKonkur-Planner-main")
+ROOT = Path(__file__).resolve().parents[2]
 DIST = ROOT / "dist"
 ASSETS = ROOT / "android" / "assets"
-FONT_SRC = Path("/home/z/my-project/work/android-sdk/vazirmatn.woff2")
+FONT_SRC = ROOT / "android" / "tools" / "fonts" / "Vazirmatn.woff2"
 
 # 1. clean & copy
 if ASSETS.exists():
@@ -15,9 +15,10 @@ if ASSETS.exists():
 ASSETS.mkdir(parents=True)
 
 EXCLUDE = {"sw.js", "registerSW.js", "manifest.webmanifest"}
+EXCLUDE_EXTS = (".apk", ".zip", ".idsig", ".map")
 for item in DIST.iterdir():
     name = item.name
-    if name in EXCLUDE or name.startswith("workbox-"):
+    if name in EXCLUDE or name.startswith("workbox-") or name.lower().endswith(EXCLUDE_EXTS):
         continue
     if item.is_dir():
         shutil.copytree(item, ASSETS / name)

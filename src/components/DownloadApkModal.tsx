@@ -22,6 +22,13 @@ interface DownloadApkModalProps {
 export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
+  const APK_FILENAME = 'ClinicPlan-v2.1.0.apk';
+  const APK_SIZE = 'حدود ۳.۲ مگابایت';
+  const GITHUB_RELEASE_APK =
+    'https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v2.1.0/ClinicPlan-v2.1.0.apk';
+  const GITHUB_RELEASE_ZIP =
+    'https://github.com/messiqwer39-lgtm/ClinicKonkur-Planner/releases/download/v2.1.0/ClinicPlan-v2.1.0-Release.zip';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
@@ -36,10 +43,10 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-bold text-slate-900">
-                دانلود نسخه نهایی و رفع خطای «برنامه نصب نشد»
+                دانلود نسخه نهایی v2.1.0 — نصب تضمینی روی همه گوشی‌ها
               </h2>
               <p className="text-xs text-slate-500">
-                نسخه بازسازی‌شده ۲.۰.۰ با کد نسخه ۲۰۰ • سازگار با اندروید ۷ تا ۱۵ (سامسونگ، شیائومی، هوآوی)
+                پکیج کاملاً جدید ir.clinickonkur.plannerapp با کد نسخه ۳۰۰ • سازگار با اندروید ۵ تا ۱۵ (سامسونگ، شیائومی، هوآوی)
               </p>
             </div>
           </div>
@@ -56,10 +63,10 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-right">
           {/* Main Download Action Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Direct Local Download - Guaranteed Fresh Install */}
+            {/* Direct Download - Fresh Package, Guaranteed Install */}
             <a
-              href="/ClinicPlan-DirectInstall.apk"
-              download="ClinicPlan-DirectInstall.apk"
+              href={GITHUB_RELEASE_APK}
+              download={APK_FILENAME}
               className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold flex flex-col justify-between shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-2">
@@ -70,52 +77,52 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود نسخه مستقیم (Direct Install)
+                  دانلود مستقیم (بدون ارور App Not Installed)
                 </span>
                 <span className="text-xs text-emerald-100 font-mono mt-0.5 block">
-                  بسته ir.clinickonkur.app • بدون ارور نصب
+                  {APK_SIZE} • بسته ir.clinickonkur.plannerapp • بدون تداخل با نسخه‌های قبلی
                 </span>
               </div>
             </a>
 
-            {/* Official Myket / Bazaar Package */}
+            {/* Official v2.1.0 Package */}
             <a
-              href="/ClinicPlan-v2.0.0.apk"
-              download="ClinicPlan-v2.0.0.apk"
+              href={GITHUB_RELEASE_APK}
+              download={APK_FILENAME}
               className="p-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex flex-col justify-between shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-bold">
-                  نسخه رسمی مایکت (v2.0.0)
+                  نسخه رسمی (کد ۳۰۰)
                 </span>
                 <ExternalLink className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود نسخه استاندارد مایکت
+                  دانلود نسخه رسمی v2.1.0
                 </span>
                 <span className="text-xs text-slate-400 mt-0.5 block">
-                  بسته com.clinickonkur.planner (کد ۲۰۰)
+                  بسته ir.clinickonkur.plannerapp • آفلاین + ذخیره عکس در گالری
                 </span>
               </div>
             </a>
           </div>
 
-          {/* Third Option: Debug Signed APK */}
+          {/* ZIP Bundle Option */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <a
-              href="/ClinicPlan-Debug.apk"
-              download="ClinicPlan-Debug.apk"
+              href={GITHUB_RELEASE_ZIP}
+              download="ClinicPlan-v2.1.0-Release.zip"
               className="p-3.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-bold flex items-center justify-between transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Wrench className="w-5 h-5 text-indigo-600 shrink-0" />
                 <div>
                   <span className="text-xs font-bold block text-indigo-900">
-                    نسخه ویژه با امضای Debug
+                    بسته ZIP رسمی گیت‌هاب
                   </span>
                   <span className="text-[11px] text-indigo-700 block">
-                    مخصوص گوشی‌هایی با محدودیت Knox یا امنیتی سختگیرانه
+                    دانلود از CDN گیت‌هاب با حداکثر سرعت
                   </span>
                 </div>
               </div>
@@ -123,8 +130,8 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
             </a>
 
             <a
-              href="/ClinicPlan-v2.0.0-Release.zip"
-              download="ClinicPlan-v2.0.0-Release.zip"
+              href={GITHUB_RELEASE_ZIP}
+              download="ClinicPlan-v2.1.0-Release.zip"
               className="p-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-bold flex items-center justify-between transition-colors"
             >
               <div className="flex items-center gap-2.5">
@@ -134,7 +141,7 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
                     دانلود بسته زیپ کامل (ZIP)
                   </span>
                   <span className="text-[11px] text-purple-700 block">
-                    شامل هر ۳ نسخه APK بومی
+                    شامل فایل APK نسخه ۲.۱.۰
                   </span>
                 </div>
               </div>
@@ -160,7 +167,7 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
                 <div>
                   <strong className="text-slate-900 block mb-0.5">۱. حذف نسخه قبلی (مهم‌ترین و شایع‌ترین دلیل):</strong>
                   <span className="text-slate-600 leading-relaxed">
-                    اگر قبلاً نسخه‌ای از کلینیک پلن را روی گوشی خود نصب کرده‌اید (یا نصب آن در دفعه قبل نصفه‌نیمه مانده است)، اندروید به دلیل تداخل امضا مانع نصب نسخه جدید می‌شود. <strong>ابتدا برنامه قبلی را کامل حذف (Uninstall) کنید</strong> و سپس فایل جدید را نصب نمایید. همچنین پیشنهاد می‌کنیم «نسخه مستقیم (Direct Install)» را نصب کنید که شناسه بسته‌ای کاملاً جدید دارد و هرگز تداخل نمی‌کند.
+                    اگر قبلاً نسخه‌ای از کلینیک پلن را روی گوشی خود نصب کرده‌اید (یا نصب آن در دفعه قبل نصفه‌نیمه مانده است)، اندروید به دلیل تداخل امضا مانع نصب نسخه جدید می‌شود. خبر خوب: <strong>نسخه v2.1.0 با پکیج کاملاً جدید (ir.clinickonkur.plannerapp) منتشر شده و دیگر با هیچ‌کدام از نصب‌های قبلی تداخل ندارد</strong> — بدون حذف نسخه‌های قدیمی هم نصب می‌شود. اگر دو آیکون تکراری دیدید، نسخه قدیمی را حذف کنید.
                   </span>
                 </div>
               </div>

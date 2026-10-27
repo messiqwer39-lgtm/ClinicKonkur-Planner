@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ir.clinickonkur.planner"
-    android:versionCode="2"
-    android:versionName="2.0">
+    package="ir.clinickonkur.plannerapp"
+    android:versionCode="300"
+    android:versionName="2.1.0">
 
-    <!-- No permissions required: the app is fully offline (local assets only).
-         External links open in the user's browser via ACTION_VIEW. -->
+    <!-- The app is fully offline (local assets only).
+         WRITE_EXTERNAL_STORAGE is only used on Android 6..9 to save
+         generated plan images into the public Pictures gallery;
+         Android 10+ uses MediaStore and needs no permission. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
 
     <application

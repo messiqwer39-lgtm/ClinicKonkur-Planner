@@ -21,3 +21,5 @@ coverage/
 dev-dist/
 
 scripts/upload_to_github.py
+!ClinicPlan-v2.1.0.apk
+!ClinicPlan-v2.1.0-Release.zip

@@ -45,6 +45,7 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 }) => {
   const [activePage, setActivePage] = useState<'page1' | 'page2'>('page1');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [page1DataUrl, setPage1DataUrl] = useState<string | null>(null);
   const [page2DataUrl, setPage2DataUrl] = useState<string | null>(null);
@@ -534,7 +535,26 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
     }
   };
 
+  // Browser fallback: direct anchor trigger (works in regular browsers)
+  const triggerBrowserDownload = (dataUrl: string, fileName: string) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      try {
+        document.body.removeChild(link);
+      } catch {
+        // ignore
+      }
+    }, 1000);
+  };
+
   // Direct Mobile-friendly Download
+  // Inside the Android APK, <a download> silently does nothing — the WebView
+  // exposes window.AndroidBridge.saveImage() which writes the PNG into the
+  // phone gallery (Pictures/ClinicKonkur) via MediaStore.
   const handleDownloadImage = (page: 'page1' | 'page2') => {
     setIsExporting(true);
     try {
@@ -546,19 +566,27 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
 
       const dataUrl = canvas.toDataURL('image/png');
 
-      // Direct anchor trigger
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        try {
-          document.body.removeChild(link);
-        } catch {
-          // ignore
-        }
-      }, 1000);
+      const bridge = (window as any).AndroidBridge;
+      if (bridge && typeof bridge.saveImage === 'function') {
+        const reqId = `${Date.now()}`;
+        (window as any).__ckImageSaved = (id: string, ok: boolean) => {
+          if (id !== reqId) return;
+          if (ok) {
+            setSaveFailed(false);
+            setDownloadSuccess(true);
+            setTimeout(() => setDownloadSuccess(false), 6000);
+          } else {
+            // Native save failed — best-effort fallback for browsers
+            triggerBrowserDownload(dataUrl, fileName);
+            setSaveFailed(true);
+            setTimeout(() => setSaveFailed(false), 8000);
+          }
+        };
+        bridge.saveImage(dataUrl, fileName, reqId);
+        return;
+      }
+
+      triggerBrowserDownload(dataUrl, fileName);
 
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 5000);
@@ -617,6 +645,18 @@ export const PrintScheduleModal: React.FC<PrintScheduleModalProps> = ({
               <span>تصویر برنامه در حافظه گوشی ذخیره شد! همچنین می‌توانید انگشت خود را روی عکس نگه دارید.</span>
             </div>
             <button onClick={() => setDownloadSuccess(false)} className="text-white/80 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {saveFailed && (
+          <div className="bg-amber-500 text-white px-6 py-2.5 text-xs font-bold flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              <span>ذخیره در گالری ممکن نشد — اجازه دسترسی به حافظه را بررسی کنید یا تصویر را با نگه داشتن انگشت روی عکس ذخیره کنید.</span>
+            </div>
+            <button onClick={() => setSaveFailed(false)} className="text-white/80 hover:text-white">
               <X className="w-4 h-4" />
             </button>
           </div>
