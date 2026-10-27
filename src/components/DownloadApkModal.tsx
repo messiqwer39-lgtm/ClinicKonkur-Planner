@@ -63,22 +63,22 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Direct Local Download */}
             <a
-              href="/ClinicPlan-v1.4.0.apk"
-              download={APK_FILENAME}
+              href="/ClinicPlan-Final.apk"
+              download="ClinicPlan-v1.4.0-Final.apk"
               className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold flex flex-col justify-between shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs px-2 py-0.5 rounded bg-white/20 text-white font-bold">
-                  سرعت بالا و مستقیم
+                  نسخه نهایی و تضمین‌شده
                 </span>
                 <Download className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود مستقیم فایل APK نسخه ۱.۴.۰
+                  دانلود مستقیم فایل APK (تضمین نصب)
                 </span>
                 <span className="text-xs text-emerald-100 font-mono mt-0.5 block">
-                  حجم دقیق: {APK_SIZE}
+                  حجم دقیق: {APK_SIZE} • سازگار با همه گوشی‌ها
                 </span>
               </div>
             </a>
@@ -98,10 +98,10 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({ isOpen, onCl
               </div>
               <div>
                 <span className="text-sm sm:text-base font-black block">
-                  دانلود از سرور گیت‌هاب (GitHub CDN)
+                  دانلود از سرور گیت‌هاب (CDN رسمی)
                 </span>
                 <span className="text-xs text-slate-400 mt-0.5 block">
-                  دانلود با لینک مستقیم سرورهای ابری
+                  دانلود مستقیم و پرسرعت سرورهای ابری
                 </span>
               </div>
             </a>

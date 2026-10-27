@@ -74,9 +74,9 @@ with zipfile.ZipFile(BASE_APK, "r") as zin:
                     print(f"  ✓ Upgraded versionName to 1.4.0 at offset {vn_idx}")
 
             # Preserve ZipInfo attributes (Unix filesystem, permissions, date)
-            new_item = zipfile.ZipInfo(item.filename, item.date_time)
-            new_item.create_system = item.create_system
-            new_item.external_attr = item.external_attr
+            new_item = zipfile.ZipInfo(item.filename, (2020, 1, 1, 0, 0, 0))
+            new_item.create_system = 3 # Unix
+            new_item.external_attr = 0o644 << 16
             new_item.flag_bits = item.flag_bits
             new_item.compress_type = item.compress_type
             zout.writestr(new_item, bytes(content))
@@ -98,15 +98,10 @@ with zipfile.ZipFile(BASE_APK, "r") as zin:
                 rel = os.path.relpath(fpath, DIST).replace(os.sep, "/")
                 archive_name = "assets/" + rel
 
-                # Preserve file permissions and timestamp
-                st = os.stat(fpath)
-                mtime = os.path.getmtime(fpath)
-                from datetime import datetime
-                dt = datetime.fromtimestamp(mtime).timetuple()[:6]
-
-                zinfo = zipfile.ZipInfo(archive_name, dt)
+                # Clean Unix file permissions and normalized timestamp
+                zinfo = zipfile.ZipInfo(archive_name, (2020, 1, 1, 0, 0, 0))
                 zinfo.create_system = 3 # Unix
-                zinfo.external_attr = (st.st_mode & 0xFFFF) << 16
+                zinfo.external_attr = 0o644 << 16
                 zinfo.compress_type = zipfile.ZIP_DEFLATED
 
                 with open(fpath, "rb") as fp:
@@ -141,6 +136,8 @@ cmd_sign = [
     "--ks-key-alias", KS_ALIAS,
     "--ks-pass", f"pass:{KS_PASS}",
     "--key-pass", f"pass:{KS_PASS}",
+    "--min-sdk-version", "21",
+    "--max-sdk-version", "34",
     "--v1-signing-enabled", "true",
     "--v2-signing-enabled", "true",
     "--v3-signing-enabled", "true",
@@ -177,8 +174,10 @@ for line in r_badging.stdout.splitlines()[:6]:
 # Copy to root and mirrors
 shutil.copyfile(OUT_V140_APK, OUT_V130_APK)
 shutil.copyfile(OUT_V140_APK, OUT_ROOT_APK)
+shutil.copyfile(OUT_V140_APK, ROOT / "ClinicPlan-Final.apk")
 shutil.copyfile(OUT_V140_APK, ROOT / "ClinicPlan-v1.3.0.apk")
 shutil.copyfile(OUT_V140_APK, PUBLIC_DIR / "ClinicPlan-v1.4.0.apk")
+shutil.copyfile(OUT_V140_APK, PUBLIC_DIR / "ClinicPlan-Final.apk")
 shutil.copyfile(OUT_V140_APK, PUBLIC_DIR / "ClinicPlan-v1.3.0.apk")
 shutil.copyfile(OUT_V140_APK, PUBLIC_DIR / "ClinicPlan-v1.2.0.apk")
 shutil.copyfile(OUT_V140_APK, PUBLIC_DIR / "ClinicPlan-v1.1.0.apk")
@@ -237,7 +236,9 @@ with zipfile.ZipFile(OUT_ZIP_140, "w", zipfile.ZIP_DEFLATED) as zrel:
     zrel.write(GUIDE_FILE, "راهنمای_کامل_نصب_و_انتشار_مایکت.txt")
 
 shutil.copyfile(OUT_ZIP_140, OUT_ZIP_130)
+shutil.copyfile(OUT_ZIP_140, ROOT / "ClinicPlan-Final.zip")
 shutil.copyfile(OUT_ZIP_140, PUBLIC_DIR / "ClinicPlan-v1.4.0-Release.zip")
+shutil.copyfile(OUT_ZIP_140, PUBLIC_DIR / "ClinicPlan-Final.zip")
 shutil.copyfile(OUT_ZIP_140, PUBLIC_DIR / "ClinicPlan-v1.3.0-Release.zip")
 
 print("=" * 65)
