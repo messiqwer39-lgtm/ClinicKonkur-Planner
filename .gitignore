@@ -20,3 +20,4 @@ coverage/
 !public/ClinicPlan-v1.4.0.apk
 dev-dist/
 
+scripts/upload_to_github.py
