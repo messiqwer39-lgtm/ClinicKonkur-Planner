@@ -1,0 +1,52 @@
+# ============================================
+# Clinic Plan (کلینیک پلن) — Web / PWA
+# cPanel / Apache configuration
+# ============================================
+
+Options -Indexes
+AddDefaultCharset UTF-8
+
+# --- Correct MIME types ---
+AddType application/manifest+json .webmanifest
+AddType application/vnd.android.package-archive .apk
+AddType application/zip .zip
+AddType image/webp .webp
+
+# --- Compression (smaller & faster) ---
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --- Browser caching ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# --- Service worker & manifest must always be fresh ---
+<IfModule mod_headers.c>
+  <FilesMatch "\.(webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# --- SPA fallback (single-page app) ---
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.(apk|zip|png|jpg|jpeg|svg|ico|webmanifest|js|css)$
+  RewriteRule . index.html [L]
+</IfModule>
