@@ -1,27 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
 import { HeaderSection } from './components/HeaderSection';
 import { WeeklyScheduleTable } from './components/WeeklyScheduleTable';
 import { SubjectsOverviewSection } from './components/SubjectsOverviewSection';
-import { ReportCardPage } from './components/ReportCardPage';
 import { PartEditModal } from './components/PartEditModal';
 import { PartTimeEditModal } from './components/PartTimeEditModal';
 import { StudyTimerModal } from './components/StudyTimerModal';
 import { ScreenshotsModal } from './components/ScreenshotsModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
-import { CounselingArticlesPage } from './components/CounselingArticlesPage';
-import { MajorsPage } from './components/MajorsPage';
-import { PomodoroSection } from './components/PomodoroSection';
-import { TestSourcesPage } from './components/TestSourcesPage';
 import { DailyProgressWidget } from './components/DailyProgressWidget';
 import { KonkurCountdown } from './components/KonkurCountdown';
 import { ClinicBanner } from './components/ClinicBanner';
-import { PrintScheduleModal } from './components/PrintScheduleModal';
 import { RotateScreenPrompt } from './components/RotateScreenPrompt';
 import { AppUserGuideModal } from './components/AppUserGuideModal';
 import { CelebrationModal } from './components/CelebrationModal';
 import { DownloadApkModal } from './components/DownloadApkModal';
 import { notificationService } from './utils/notificationService';
+
+// Heavy, rarely-visited pages are code-split so the first paint stays fast
+// (recharts + data pages + the export/print modal load only when needed)
+const ReportCardPage = lazy(() =>
+  import('./components/ReportCardPage').then((m) => ({ default: m.ReportCardPage }))
+);
+const CounselingArticlesPage = lazy(() =>
+  import('./components/CounselingArticlesPage').then((m) => ({ default: m.CounselingArticlesPage }))
+);
+const MajorsPage = lazy(() =>
+  import('./components/MajorsPage').then((m) => ({ default: m.MajorsPage }))
+);
+const PomodoroSection = lazy(() =>
+  import('./components/PomodoroSection').then((m) => ({ default: m.PomodoroSection }))
+);
+const TestSourcesPage = lazy(() =>
+  import('./components/TestSourcesPage').then((m) => ({ default: m.TestSourcesPage }))
+);
+const PrintScheduleModal = lazy(() =>
+  import('./components/PrintScheduleModal').then((m) => ({ default: m.PrintScheduleModal }))
+);
+
+const TabFallback = () => (
+  <div className="py-16 text-center text-slate-400 text-sm font-bold animate-pulse">
+    در حال بارگذاری بخش...
+  </div>
+);
 
 import {
   DaySchedule,
@@ -393,11 +414,13 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <ReportCardPage
-                reports={reports}
-                onUpdateReport={setReports}
-                onPrint={() => setIsPrintModalOpen(true)}
-              />
+              <Suspense fallback={<TabFallback />}>
+                <ReportCardPage
+                  reports={reports}
+                  onUpdateReport={setReports}
+                  onPrint={() => setIsPrintModalOpen(true)}
+                />
+              </Suspense>
               <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
             </motion.div>
           )}
@@ -411,9 +434,11 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <PomodoroSection
-                onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
-              />
+              <Suspense fallback={<TabFallback />}>
+                <PomodoroSection
+                  onAddStudyTimeToReport={handleAddPomodoroTimeToReport}
+                />
+              </Suspense>
               <ClinicBanner variant="compact" onOpenWelcome={() => setIsWelcomeOpen(true)} />
             </motion.div>
           )}
@@ -427,7 +452,9 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <CounselingArticlesPage />
+              <Suspense fallback={<TabFallback />}>
+                <CounselingArticlesPage />
+              </Suspense>
               <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
             </motion.div>
           )}
@@ -441,7 +468,9 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <TestSourcesPage />
+              <Suspense fallback={<TabFallback />}>
+                <TestSourcesPage />
+              </Suspense>
               <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
             </motion.div>
           )}
@@ -455,7 +484,9 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
             >
-              <MajorsPage />
+              <Suspense fallback={<TabFallback />}>
+                <MajorsPage />
+              </Suspense>
               <ClinicBanner variant="footer" onOpenWelcome={() => setIsWelcomeOpen(true)} />
             </motion.div>
           )}
@@ -466,7 +497,7 @@ export default function App() {
       <footer className="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-400 no-print mt-auto">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="لوگو" className="w-5 h-5 rounded-full" />
+            <img src="./logo.png" alt="لوگو" className="w-5 h-5 rounded-full" />
             <span className="font-bold text-slate-200">
               پلنر کلینیک کنکور · سامانه برنامه‌ریزی تخصصی و مشاوره کنکور
             </span>
@@ -540,15 +571,18 @@ export default function App() {
         onMarkSlotCompleted={handleMarkSlotCompletedFromTimer}
       />
 
-      {/* Print & Offline Schedule Image Modal */}
-      <PrintScheduleModal
-        isOpen={isPrintModalOpen}
-        onClose={() => setIsPrintModalOpen(false)}
-        schedule={schedule}
-        headerInfo={headerInfo}
-        partTimes={partTimes}
-        reports={reports}
-      />
+      {/* Print & Offline Schedule Image Modal (also PDF / Word export) */}
+      <Suspense fallback={null}>
+        <PrintScheduleModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          schedule={schedule}
+          headerInfo={headerInfo}
+          partTimes={partTimes}
+          reports={reports}
+          subjects={overviewList}
+        />
+      </Suspense>
 
       {/* Daily 100% Completion Celebration Modal */}
       <CelebrationModal

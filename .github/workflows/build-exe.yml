@@ -1,0 +1,50 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install bun and build web app
+        shell: bash
+        run: |
+          npm install -g bun
+          bun install
+          bun run build
+
+      - name: Copy web build into desktop shell
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path desktop/app | Out-Null
+          Copy-Item -Path dist/* -Destination desktop/app -Recurse -Force
+          Remove-Item desktop/app/*.apk, desktop/app/*-Release.zip -ErrorAction SilentlyContinue
+
+      - name: Build Windows installers
+        working-directory: desktop
+        run: |
+          npm install
+          npx electron-builder --win nsis portable --config.win.signAndEditExecutable=true
+
+      - name: Release executables
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            desktop/release/ClinicPlan-Setup-*.exe
+            desktop/release/ClinicPlan-Portable-*.exe
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

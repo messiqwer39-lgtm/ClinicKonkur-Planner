@@ -23,3 +23,10 @@ dev-dist/
 scripts/upload_to_github.py
 !ClinicPlan-v2.1.0.apk
 !ClinicPlan-v2.1.0-Release.zip
+
+# electron build artifacts
+desktop/app
+desktop/release
+desktop/node_modules
+!desktop/build/
+!desktop/build/**

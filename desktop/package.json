@@ -1,0 +1,62 @@
+{
+  "name": "clinickonkur-planner-desktop",
+  "version": "2.2.0",
+  "private": true,
+  "description": "کلینیک پلن — برنامه‌ریز تخصصی کنکور (نسخه ویندوز)",
+  "author": "Clinic Konkur",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "dist": "electron-builder --win nsis portable",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "ir.clinickonkur.plannerapp",
+    "productName": "ClinicPlan",
+    "copyright": "Copyright © 2026 Clinic Konkur",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "app/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "artifactName": "ClinicPlan-${version}-${arch}-${productName}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "ClinicPlan کلینیک پلن",
+      "artifactName": "ClinicPlan-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "ClinicPlan-Portable-${version}.${ext}"
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}
